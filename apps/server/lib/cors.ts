@@ -3,7 +3,8 @@ import { cors } from 'hono/cors';
 
 export function initCors(app: OpenAPIHono) {
   app.use(
-    '/api/v1/*',
+    // better-auth 的 /api/auth/* 也要包括在内
+    '/api/*',
     cors({
       origin: 'http://localhost:3000',
       allowHeaders: ['Content-Type', 'Authorization'],
