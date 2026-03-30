@@ -1,0 +1,10 @@
+{
+  "name": "@tarquin/types",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "@hono/zod-openapi": "^1.2.3"
+  },
+  "peerDependencies": {}
+}
