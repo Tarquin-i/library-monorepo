@@ -2,7 +2,10 @@
   "name": "@demo/db",
   "type": "module",
   "scripts": {
-    "dev": "bunx drizzle-kit push && bunx drizzle-kit studio"
+    "dev": "bun run db:reset && bunx drizzle-kit studio",
+    "db:force-push": "drizzle-kit push --force",
+    "db:push": "drizzle-kit push",
+    "db:reset": "bun db:push && bun ./seed/index.ts"
   },
   "dependencies": {
 
