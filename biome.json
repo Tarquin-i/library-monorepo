@@ -13,7 +13,7 @@
     "includes": [
       "**",
       "!bun.lock",
-      "!**/globals.css"
+      "!**/styles.css"
     ]
   },
   "formatter": {
