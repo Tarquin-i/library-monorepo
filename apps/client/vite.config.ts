@@ -15,9 +15,9 @@ const config = defineConfig({
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     viteReact(),
   ],server: {
-    proxy: {
-      '/api': 'http://localhost:3100',
-    },
+    // proxy: {
+    //   '/api': 'http://localhost:3100',
+    // },
   },
 })
 
