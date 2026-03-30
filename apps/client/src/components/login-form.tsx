@@ -50,21 +50,21 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>登录您的账户</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            输入您的邮箱地址以登录到您的账户
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+              <div className='mb-4 p-3 bg-red-100 text-red-700 rounded'>
                 {error}
               </div>
             )}
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor={emailId}>Email</FieldLabel>
+                <FieldLabel htmlFor={emailId}>邮箱地址</FieldLabel>
                 <Input
                   id={emailId}
                   type='email'
@@ -76,12 +76,12 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className='flex items-center'>
-                  <FieldLabel htmlFor={passwordId}>Password</FieldLabel>
+                  <FieldLabel htmlFor={passwordId}>密码</FieldLabel>
                   <a
                     href='https://google.com'
                     className='ml-auto inline-block text-sm underline-offset-4 hover:underline'
                   >
-                    Forgot your password?
+                    忘记密码？
                   </a>
                 </div>
                 <Input
@@ -100,8 +100,8 @@ export function LoginForm({
                   Login with Google
                 </Button>
                 <FieldDescription className='text-center'>
-                  Don&apos;t have an account?{' '}
-                  <a href='https://google.com'>Sign up</a>
+                  没有账户？{' '}
+                  <a href='https://google.com'>注册</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
