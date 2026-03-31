@@ -1,12 +1,7 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
-import * as userRouter from '@tarquin/types/api/v1/user.type';
-import * as listUserHandler from './v1/user.handle';
+import { Hono } from 'hono';
+import userApp from './v1/user.handle';
 
+const api = new Hono()
+  .route('/v1', userApp);
 
-export function initOpenAPIRouter(app: OpenAPIHono) {
-  const v1Router = new OpenAPIHono();
-
-  v1Router.openapi(userRouter.listUsers, listUserHandler.listUsers);
-
-  app.route('/api/v1', v1Router);
-}
+export default api;
