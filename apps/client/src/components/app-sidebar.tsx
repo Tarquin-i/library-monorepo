@@ -20,13 +20,8 @@ import {
   FileChartColumnIcon,
   CommandIcon,
 } from 'lucide-react';
-
-const data = {
-  user: {
-    name: 'tarquin',
-    email: '3442322864@qq.com',
-    avatar: 'https://i.111666.best/image/T4SynTNpWMDnqgm7V4u0UL.jpg',
-  },
+import { authClient } from '@/lib/better-auth';
+const navData = {
   navMain: [
     {
       title: 'Dashboard',
@@ -74,6 +69,9 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data } = authClient.useSession();
+  const isAdmin = data?.user?.role === 'admin';
+
   return (
     <Sidebar collapsible='offcanvas' {...props}>
       <SidebarHeader>
@@ -92,11 +90,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavAdmin items={data.admin} />
+        <NavMain items={navData.navMain} />
+        {isAdmin && <NavAdmin items={navData.admin} />}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
