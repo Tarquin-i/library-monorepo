@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import './styles.css';
+import { Toaster } from 'sonner';
 
 const router = createRouter({
   routeTree,
@@ -34,6 +35,7 @@ if (!rootElement.innerHTML) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RouterProvider router={router} />
+        <Toaster />
       </TooltipProvider>
     </QueryClientProvider>,
   );
