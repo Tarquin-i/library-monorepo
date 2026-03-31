@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BookInputRouteImport } from './routes/book-input'
+import { Route as BookBorrowingRouteImport } from './routes/book-borrowing'
+import { Route as AccessControlRouteImport } from './routes/access-control'
 import { Route as IndexRouteImport } from './routes/index'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -29,6 +32,21 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookInputRoute = BookInputRouteImport.update({
+  id: '/book-input',
+  path: '/book-input',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookBorrowingRoute = BookBorrowingRouteImport.update({
+  id: '/book-borrowing',
+  path: '/book-borrowing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessControlRoute = AccessControlRouteImport.update({
+  id: '/access-control',
+  path: '/access-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +55,18 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/access-control': typeof AccessControlRoute
+  '/book-borrowing': typeof BookBorrowingRoute
+  '/book-input': typeof BookInputRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/access-control': typeof AccessControlRoute
+  '/book-borrowing': typeof BookBorrowingRoute
+  '/book-input': typeof BookInputRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -50,20 +74,48 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/access-control': typeof AccessControlRoute
+  '/book-borrowing': typeof BookBorrowingRoute
+  '/book-input': typeof BookInputRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/access-control'
+    | '/book-borrowing'
+    | '/book-input'
+    | '/dashboard'
+    | '/login'
+    | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/register'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/register'
+  to:
+    | '/'
+    | '/access-control'
+    | '/book-borrowing'
+    | '/book-input'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+  id:
+    | '__root__'
+    | '/'
+    | '/access-control'
+    | '/book-borrowing'
+    | '/book-input'
+    | '/dashboard'
+    | '/login'
+    | '/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccessControlRoute: typeof AccessControlRoute
+  BookBorrowingRoute: typeof BookBorrowingRoute
+  BookInputRoute: typeof BookInputRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
@@ -92,6 +144,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book-input': {
+      id: '/book-input'
+      path: '/book-input'
+      fullPath: '/book-input'
+      preLoaderRoute: typeof BookInputRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book-borrowing': {
+      id: '/book-borrowing'
+      path: '/book-borrowing'
+      fullPath: '/book-borrowing'
+      preLoaderRoute: typeof BookBorrowingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/access-control': {
+      id: '/access-control'
+      path: '/access-control'
+      fullPath: '/access-control'
+      preLoaderRoute: typeof AccessControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +177,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccessControlRoute: AccessControlRoute,
+  BookBorrowingRoute: BookBorrowingRoute,
+  BookInputRoute: BookInputRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,

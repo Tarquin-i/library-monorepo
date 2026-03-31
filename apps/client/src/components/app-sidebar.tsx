@@ -1,9 +1,8 @@
 import * as React from 'react';
 
 import { Link } from '@tanstack/react-router';
-import { NavDocuments } from '@/components/nav-documents';
+import { NavAdmin } from '@/components/nav-admin';
 import { NavMain } from '@/components/nav-main';
-import { NavSecondary } from '@/components/nav-secondary';
 import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
@@ -17,17 +16,8 @@ import {
 import {
   LayoutDashboardIcon,
   ListIcon,
-  ChartBarIcon,
-  FolderIcon,
-  UsersIcon,
-  CameraIcon,
-  FileTextIcon,
-  Settings2Icon,
-  CircleHelpIcon,
-  SearchIcon,
   DatabaseIcon,
   FileChartColumnIcon,
-  FileIcon,
   CommandIcon,
 } from 'lucide-react';
 
@@ -40,111 +30,46 @@ const data = {
   navMain: [
     {
       title: 'Dashboard',
-      url: 'dashboard',
+      url: '/dashboard',
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: 'Lifecycle',
-      url: '#',
+      title: '书籍借阅',
+      url: '/book-borrowing',
       icon: <ListIcon />,
     },
-    {
-      title: 'Analytics',
-      url: '#',
-      icon: <ChartBarIcon />,
-    },
-    {
-      title: 'Projects',
-      url: '#',
-      icon: <FolderIcon />,
-    },
-    {
-      title: 'Team',
-      url: '#',
-      icon: <UsersIcon />,
-    },
+    // {
+    //   title: 'Analytics',
+    //   url: '/2',
+    //   icon: <ChartBarIcon />,
+    // },
+    // {
+    //   title: 'Projects',
+    //   url: '/3',
+    //   icon: <FolderIcon />,
+    // },
+    // {
+    //   title: 'Team',
+    //   url: '/4',
+    //   icon: <UsersIcon />,
+    // },
   ],
-  navClouds: [
+  admin: [
     {
-      title: 'Capture',
-      icon: <CameraIcon />,
-      isActive: true,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Proposal',
-      icon: <FileTextIcon />,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Prompts',
-      icon: <FileTextIcon />,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: 'Settings',
-      url: '#',
-      icon: <Settings2Icon />,
-    },
-    {
-      title: 'Get Help',
-      url: '#',
-      icon: <CircleHelpIcon />,
-    },
-    {
-      title: 'Search',
-      url: '#',
-      icon: <SearchIcon />,
-    },
-  ],
-  documents: [
-    {
-      name: 'Data Library',
-      url: '#',
+      name: '权限管理',
+      url: '/access-control',
       icon: <DatabaseIcon />,
     },
     {
-      name: 'Reports',
-      url: '#',
+      name: '书籍录入',
+      url: '/book-input',
       icon: <FileChartColumnIcon />,
     },
-    {
-      name: 'Word Assistant',
-      url: '#',
-      icon: <FileIcon />,
-    },
+    // {
+    //   name: 'Word Assistant',
+    //   url: '/10',
+    //   icon: <FileIcon />,
+    // },
   ],
 };
 
@@ -168,8 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className='mt-auto' />
+        <NavAdmin items={data.admin} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

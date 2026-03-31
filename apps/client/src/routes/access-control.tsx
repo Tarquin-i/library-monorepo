@@ -1,8 +1,8 @@
-import Dashboard from '@/app/main/dashboard';
+import AccessControl from '@/app/admin/access-control';
 import { roleCheck } from '@/lib/route-guard';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/access-control')({
   beforeLoad: async () => {
     // const session = await authClient.getSession();
     // console.log(session.data?.user?.role);
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/dashboard')({
 function RouteComponent() {
   return (
     <div>
-      <Dashboard />
+      <AccessControl />
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import Dashboard from '@/app/main/dashboard';
-import { roleCheck } from '@/lib/route-guard';
 import { createFileRoute } from '@tanstack/react-router';
+import { roleCheck } from '@/lib/route-guard';
+import BookInput from '@/app/admin/book-input';
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/book-borrowing')({
   beforeLoad: async () => {
     // const session = await authClient.getSession();
     // console.log(session.data?.user?.role);
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/dashboard')({
 function RouteComponent() {
   return (
     <div>
-      <Dashboard />
+      <BookInput />
     </div>
   );
 }
