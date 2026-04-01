@@ -24,11 +24,11 @@ export function NavAdmin({
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
-              <Link to={item.url}>
+            <Link to={item.url}>
               <SidebarMenuButton>
                 {item.icon}
                 <span>{item.name}</span>
-            </SidebarMenuButton>
+              </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
         ))}

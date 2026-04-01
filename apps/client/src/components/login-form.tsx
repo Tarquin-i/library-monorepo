@@ -19,7 +19,6 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useNavigate, Link } from '@tanstack/react-router';
 
-
 export function LoginForm({
   className,
   ...props

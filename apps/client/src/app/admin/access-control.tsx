@@ -34,13 +34,12 @@ export default function AccessControl() {
   // 获取用户列表和可用角色
   useEffect(() => {
     async function fetchData() {
-      const [usersRes, rolesRes] = await Promise.all([
-        client.api.v1.users.$get(),
-        client.api.v1.roles.$get(),
-      ]);
-      const usersJson = await usersRes.json();
+      const usersRes = await client.api.v1.users.$get();
+      const rolesRes = await client.api.v1.roles.$get();
+      // 这个 json() 需要使用 await ，否则会报错
+      const userJson = await usersRes.json();
       const rolesJson = await rolesRes.json();
-      setUsers(usersJson.data);
+      setUsers(userJson.data);
       setRoles(rolesJson.data);
     }
     fetchData();
@@ -48,12 +47,15 @@ export default function AccessControl() {
 
   // 修改角色
   async function handleRoleChange(userId: string, newRole: string) {
-    const res = await client.api.v1.users[':id'].role.$patch({
+    // 更新服务器数据
+    await client.api.v1.users[':id'].role.$patch({
       param: { id: userId },
       json: { role: newRole },
     });
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
+      prev.map((user) =>
+        user.id === userId ? { ...user, role: newRole } : user,
+      ),
     );
     toast.success('角色修改成功');
   }
@@ -85,7 +87,6 @@ export default function AccessControl() {
                   <TableHead>用户名</TableHead>
                   <TableHead>邮箱</TableHead>
                   <TableHead>当前角色</TableHead>
-                  <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,9 +94,6 @@ export default function AccessControl() {
                   <TableRow key={user.id}>
                     <TableCell className='font-medium'>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      
-                    </TableCell>
                     <TableCell>
                       <Select
                         value={user.role}
