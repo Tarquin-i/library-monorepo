@@ -21,11 +21,11 @@ interface BookFormData {
   publisher: string;
   publishDate: string;
   category: string;
-  price: string;
-  totalStock: string;
-  availableStock: string;
-  description: string;
-  coverImage: string;
+  price: number;
+  totalStock: number;
+  availableStock: number;
+  description?: string;
+  coverImage?: string;
 }
 
 const bookFormData: BookFormData = {
@@ -35,9 +35,9 @@ const bookFormData: BookFormData = {
   publisher: '',
   publishDate: '',
   category: '',
-  price: '',
-  totalStock: '',
-  availableStock: '',
+  price: 0,
+  totalStock: 0,
+  availableStock: 0,
   description: '',
   coverImage: '',
 };
@@ -53,6 +53,7 @@ export function BookInputForm({
   const queryClient = useQueryClient();
   const createBook = useMutation({
     ...createBookMutation,
+    // 创建成功之后让缓存失效，触发列表重新拉取数据
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
     },
@@ -61,23 +62,17 @@ export function BookInputForm({
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    createBook.mutate(
-      {
-        ...formData,
-        price: Number(formData.price),
-        totalStock: Number(formData.totalStock),
-        availableStock: Number(formData.availableStock),
-        description: formData.description || undefined,
-        coverImage: formData.coverImage || undefined,
-      },
-      {
-        onSuccess: () => {
+    createBook.mutate(formData, {
+      onSuccess: (data) => {
+        if (data.isUpdated) {
+          toast.success('已有藏品，已追加1本库存');
+        } else {
           toast.success('书籍录入成功');
-          setFormData(bookFormData);
-          onOpenChange(false);
-        },
+        }
+        setFormData(bookFormData);
+        onOpenChange(false);
       },
-    );
+    });
   }
 
   return (
@@ -172,7 +167,7 @@ export function BookInputForm({
                 required
                 value={formData.price}
                 onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
+                  setFormData({ ...formData, price: e.target.valueAsNumber })
                 }
               />
             </div>
@@ -186,7 +181,10 @@ export function BookInputForm({
                 required
                 value={formData.totalStock}
                 onChange={(e) =>
-                  setFormData({ ...formData, totalStock: e.target.value })
+                  setFormData({
+                    ...formData,
+                    totalStock: e.target.valueAsNumber,
+                  })
                 }
               />
             </div>
@@ -200,7 +198,10 @@ export function BookInputForm({
                 required
                 value={formData.availableStock}
                 onChange={(e) =>
-                  setFormData({ ...formData, availableStock: e.target.value })
+                  setFormData({
+                    ...formData,
+                    availableStock: e.target.valueAsNumber,
+                  })
                 }
               />
             </div>

@@ -1,12 +1,5 @@
 import { client } from '@/lib/rpc';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
 export const listUsersQuery = {
   queryKey: ['users'],
   queryFn: async () => {
@@ -21,12 +14,20 @@ export const listRolesQuery = {
   queryFn: async () => {
     const res = await client.roles.$get();
     const json = await res.json();
+    // console.log('res--------------', res);
+    // console.log('json--------------', json);
     return json.data;
   },
 };
 
 export const updateUserRoleMutation = {
-  mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+  mutationFn: async ({
+    userId,
+    newRole,
+  }: {
+    userId: string;
+    newRole: string;
+  }) => {
     await client.users[':id'].role.$patch({
       param: { id: userId },
       json: { role: newRole },
