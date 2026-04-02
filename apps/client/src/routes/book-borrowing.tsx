@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { roleCheck } from '@/lib/route-guard';
-import BookInput from '@/app/admin/book-input';
+import BookBorrowing from '@/app/main/book-borrowing';
 
 export const Route = createFileRoute('/book-borrowing')({
   beforeLoad: async () => {
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/book-borrowing')({
 function RouteComponent() {
   return (
     <div>
-      <BookInput />
+      <BookBorrowing />
     </div>
   );
 }
