@@ -7,24 +7,29 @@ export interface User {
   role: string;
 }
 
-// 获取用户列表
-export async function listUsersQuery() {
-  const res = await client.users.$get();
-  const json = await res.json();
-  return json.data;
-}
+export const listUsersQuery = {
+  queryKey: ['users'],
+  queryFn: async () => {
+    const res = await client.users.$get();
+    const json = await res.json();
+    return json.data;
+  },
+};
 
-// 获取角色列表
-export async function listRolesQuery() {
-  const res = await client.roles.$get();
-  const json = await res.json();
-  return json.data;
-}
+export const listRolesQuery = {
+  queryKey: ['roles'],
+  queryFn: async () => {
+    const res = await client.roles.$get();
+    const json = await res.json();
+    return json.data;
+  },
+};
 
-// 更新用户角色
-export async function updateUserRoleMutation(userId: string, newRole: string) {
-  await client.users[':id'].role.$patch({
-    param: { id: userId },
-    json: { role: newRole },
-  });
-}
+export const updateUserRoleMutation = {
+  mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+    await client.users[':id'].role.$patch({
+      param: { id: userId },
+      json: { role: newRole },
+    });
+  },
+};

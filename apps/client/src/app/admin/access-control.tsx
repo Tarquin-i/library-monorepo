@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -18,34 +17,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { listUsersQuery, listRolesQuery, updateUserRoleMutation, type User } from '@/api/user.query';
+import { listUsersQuery, listRolesQuery, updateUserRoleMutation } from '@/api/user.query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function AccessControl() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const queryClient = useQueryClient();
+  const { data: users = [] } = useQuery(listUsersQuery);
+  const { data: roles = [] } = useQuery(listRolesQuery);
 
-  // 获取用户列表和可用角色
-  useEffect(() => {
-    async function fetchData() {
-      const users = await listUsersQuery();
-      const roles = await listRolesQuery();
-      setUsers(users);
-      setRoles(roles);
-    }
-    fetchData();
-  }, []);
+  const updateRole = useMutation({
+    ...updateUserRoleMutation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('角色修改成功');
+    },
+  });
 
-  // 修改角色
-  async function handleRoleChange(userId: string, newRole: string) {
-    // 更新服务器数据
-    await updateUserRoleMutation(userId, newRole);
-    // 设置下拉框显示为当前用户身份
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, role: newRole } : user,
-      ),
-    );
-    toast.success('角色修改成功');
+  function handleRoleChange(userId: string, newRole: string) {
+    updateRole.mutate({ userId, newRole });
   }
 
   return (
