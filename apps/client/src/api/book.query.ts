@@ -1,34 +1,7 @@
 import { client } from '@/lib/rpc';
+import type { InferRequestType } from 'hono/client';
 
-export interface Book {
-  ISBN: string;
-  bookName: string;
-  author: string;
-  publisher: string;
-  publishDate: string;
-  category: string;
-  price: number;
-  totalStock: number;
-  availableStock: number;
-  description: string | null;
-  coverImage: string | null;
-  status: string;
-  createdAt: string;
-}
-
-export interface CreateBookInput {
-  ISBN: string;
-  bookName: string;
-  author: string;
-  publisher: string;
-  publishDate: string;
-  category: string;
-  price: number;
-  totalStock: number;
-  availableStock: number;
-  description?: string;
-  coverImage?: string;
-}
+type CreateBookInput = InferRequestType<typeof client.books.$post>['json'];
 
 export const listBooksQuery = {
   queryKey: ['books'],
@@ -39,10 +12,13 @@ export const listBooksQuery = {
   },
 };
 
+// mutation 不能自动推到可以通过 InferRequestType 提取端点返回类型
 export const createBookMutation = {
   mutationFn: async (bookData: CreateBookInput) => {
-    await client.books.$post({
-      json: bookData,
-    });
+    const res = await client.books.$post({ json: bookData });
+    // console.log('res--------------', res);
+    // console.log('json--------------', json);
+    // 用状态码区分：201 新增，200 追加库存
+    return { isUpdated: res.status === 200 };
   },
 };
