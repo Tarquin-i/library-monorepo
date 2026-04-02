@@ -1,4 +1,5 @@
 import { client } from '@/lib/rpc';
+
 export interface Book {
   ISBN: string;
   bookName: string;
@@ -29,16 +30,19 @@ export interface CreateBookInput {
   coverImage?: string;
 }
 
-// 获取图书列表
-export async function listBooksQuery() {
-  const res = await client.books.$get();
-  const json = await res.json();
-  return json.data;
-}
+export const listBooksQuery = {
+  queryKey: ['books'],
+  queryFn: async () => {
+    const res = await client.books.$get();
+    const json = await res.json();
+    return json.data;
+  },
+};
 
-// 创建新图书
-export async function createBookMutation(bookData: CreateBookInput) {
-  await client.books.$post({
-    json: bookData,
-  });
-}
+export const createBookMutation = {
+  mutationFn: async (bookData: CreateBookInput) => {
+    await client.books.$post({
+      json: bookData,
+    });
+  },
+};
