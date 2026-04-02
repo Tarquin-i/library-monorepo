@@ -18,14 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { client } from '@/lib/rpc';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { listUsersQuery, listRolesQuery, updateUserRoleMutation, type User } from '@/api/user.query';
 
 export default function AccessControl() {
   const [users, setUsers] = useState<User[]>([]);
@@ -34,13 +27,10 @@ export default function AccessControl() {
   // 获取用户列表和可用角色
   useEffect(() => {
     async function fetchData() {
-      const usersRes = await client.api.v1.users.$get();
-      const rolesRes = await client.api.v1.roles.$get();
-      // 这个 json() 需要使用 await ，否则会报错
-      const userJson = await usersRes.json();
-      const rolesJson = await rolesRes.json();
-      setUsers(userJson.data);
-      setRoles(rolesJson.data);
+      const users = await listUsersQuery();
+      const roles = await listRolesQuery();
+      setUsers(users);
+      setRoles(roles);
     }
     fetchData();
   }, []);
@@ -48,10 +38,8 @@ export default function AccessControl() {
   // 修改角色
   async function handleRoleChange(userId: string, newRole: string) {
     // 更新服务器数据
-    await client.api.v1.users[':id'].role.$patch({
-      param: { id: userId },
-      json: { role: newRole },
-    });
+    await updateUserRoleMutation(userId, newRole);
+    // 设置下拉框显示为当前用户身份
     setUsers((prev) =>
       prev.map((user) =>
         user.id === userId ? { ...user, role: newRole } : user,
