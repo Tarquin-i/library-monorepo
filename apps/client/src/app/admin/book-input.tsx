@@ -17,39 +17,38 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-  SheetClose,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { client } from '@/lib/rpc';
+import {
+  listBooksQuery,
+  createBookMutation,
+  type Book,
+} from '@/api/book.query';
 import { Search, Plus } from 'lucide-react';
-
-interface Book {
-  ISBN: string;
-  bookName: string;
-  author: string;
-  publisher: string;
-  publishDate: string;
-  category: string;
-  price: number;
-  totalStock: number;
-  availableStock: number;
-  description: string | null;
-  coverImage: string | null;
-  status: string;
-  createdAt: string;
-}
 
 export default function BookInput() {
   const [books, setBooks] = useState<Book[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    ISBN: '',
+    bookName: '',
+    author: '',
+    publisher: '',
+    publishDate: '',
+    category: '',
+    price: '',
+    totalStock: '',
+    availableStock: '',
+    description: '',
+    coverImage: '',
+  });
 
   async function fetchBooks() {
-    const res = await client.api.v1.books.$get();
-    const json = await res.json();
-    setBooks(json.data as Book[]);
+    const books = await listBooksQuery();
+    setBooks(books);
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 挂载时请求一次
@@ -59,29 +58,40 @@ export default function BookInput() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    try {
-      await client.api.v1.books.$post({
-        json: {
-          ISBN: fd.get('ISBN') as string,
-          bookName: fd.get('bookName') as string,
-          author: fd.get('author') as string,
-          publisher: fd.get('publisher') as string,
-          publishDate: fd.get('publishDate') as string,
-          category: fd.get('category') as string,
-          price: Number(fd.get('price')),
-          totalStock: Number(fd.get('totalStock')),
-          availableStock: Number(fd.get('availableStock')),
-          description: (fd.get('description') as string) || undefined,
-          coverImage: (fd.get('coverImage') as string) || undefined,
-        },
-      });
-      toast.success('书籍录入成功');
-      setSheetOpen(false);
-      fetchBooks();
-    } catch {
-      toast.error('录入失败，请检查信息');
-    }
+
+    await createBookMutation({
+      ISBN: formData.ISBN,
+      bookName: formData.bookName,
+      author: formData.author,
+      publisher: formData.publisher,
+      publishDate: formData.publishDate,
+      category: formData.category,
+      price: Number(formData.price),
+      totalStock: Number(formData.totalStock),
+      availableStock: Number(formData.availableStock),
+      description: formData.description || undefined,
+      coverImage: formData.coverImage || undefined,
+    });
+
+    toast.success('书籍录入成功');
+    setSheetOpen(false);
+
+    // 清空表单
+    setFormData({
+      ISBN: '',
+      bookName: '',
+      author: '',
+      publisher: '',
+      publishDate: '',
+      category: '',
+      price: '',
+      totalStock: '',
+      availableStock: '',
+      description: '',
+      coverImage: '',
+    });
+
+    fetchBooks();
   }
 
   return (
@@ -125,31 +135,27 @@ export default function BookInput() {
                   <TableHead>出版社</TableHead>
                   <TableHead>分类</TableHead>
                   <TableHead>价格</TableHead>
-                  <TableHead>馆藏</TableHead>
-                  <TableHead>可借</TableHead>
+                  <TableHead>馆藏数量</TableHead>
+                  <TableHead>可借数量</TableHead>
                   <TableHead>状态</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(
-                  books.map((b) => (
-                    <TableRow key={b.ISBN}>
-                      <TableCell className='font-mono text-sm'>
-                        {b.ISBN}
-                      </TableCell>
-                      <TableCell className='font-medium'>
-                        {b.bookName}
-                      </TableCell>
-                      <TableCell>{b.author}</TableCell>
-                      <TableCell>{b.publisher}</TableCell>
-                      <TableCell>{b.category}</TableCell>
-                      <TableCell>¥{b.price}</TableCell>
-                      <TableCell>{b.totalStock}</TableCell>
-                      <TableCell>{b.availableStock}</TableCell>
-                      <TableCell>{b.status}</TableCell>
-                    </TableRow>
-                  ))
-                )}
+                {books.map((b) => (
+                  <TableRow key={b.ISBN}>
+                    <TableCell className='font-mono text-sm'>
+                      {b.ISBN}
+                    </TableCell>
+                    <TableCell className='font-medium'>{b.bookName}</TableCell>
+                    <TableCell>{b.author}</TableCell>
+                    <TableCell>{b.publisher}</TableCell>
+                    <TableCell>{b.category}</TableCell>
+                    <TableCell>¥{b.price}</TableCell>
+                    <TableCell>{b.totalStock}</TableCell>
+                    <TableCell>{b.availableStock}</TableCell>
+                    <TableCell>{b.status}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -160,32 +166,80 @@ export default function BookInput() {
         <SheetContent className='overflow-y-auto'>
           <SheetHeader>
             <SheetTitle>录入新书籍</SheetTitle>
-            <SheetDescription>填写书籍信息，带 * 为必填项</SheetDescription>
+            <SheetDescription>填写书籍信息</SheetDescription>
           </SheetHeader>
           <form onSubmit={handleSubmit} className='space-y-4 px-4'>
             <div className='space-y-2'>
               <Label>ISBN</Label>
-              <Input name='ISBN' placeholder='978-xxx-xxx' required />
+              <Input
+                name='ISBN'
+                placeholder='xxx-x-xxx-xxxxx-x'
+                required
+                value={formData.ISBN}
+                onChange={(e) =>
+                  setFormData({ ...formData, ISBN: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>书名</Label>
-              <Input name='bookName' placeholder='请输入书名' required />
+              <Input
+                name='bookName'
+                placeholder='请输入书名'
+                required
+                value={formData.bookName}
+                onChange={(e) =>
+                  setFormData({ ...formData, bookName: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>作者</Label>
-              <Input name='author' placeholder='请输入作者' required />
+              <Input
+                name='author'
+                placeholder='请输入作者'
+                required
+                value={formData.author}
+                onChange={(e) =>
+                  setFormData({ ...formData, author: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>出版社</Label>
-              <Input name='publisher' placeholder='请输入出版社' required />
+              <Input
+                name='publisher'
+                placeholder='请输入出版社'
+                required
+                value={formData.publisher}
+                onChange={(e) =>
+                  setFormData({ ...formData, publisher: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>出版日期</Label>
-              <Input name='publishDate' placeholder='如 2024-01' required />
+              <Input
+                name='publishDate'
+                placeholder='请输入出版日期'
+                required
+                value={formData.publishDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, publishDate: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>分类</Label>
-              <Input name='category' placeholder='如 计算机、文学' required />
+              <Input
+                name='category'
+                placeholder='请输入书籍类型'
+                required
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+              />
             </div>
             <div className='grid grid-cols-3 gap-3'>
               <div className='space-y-2'>
@@ -193,9 +247,14 @@ export default function BookInput() {
                 <Input
                   name='price'
                   type='number'
+                  min={0}
                   step='0.01'
                   placeholder='0.00'
                   required
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
                 />
               </div>
               <div className='space-y-2'>
@@ -203,8 +262,13 @@ export default function BookInput() {
                 <Input
                   name='totalStock'
                   type='number'
+                  min={0}
                   placeholder='1'
                   required
+                  value={formData.totalStock}
+                  onChange={(e) =>
+                    setFormData({ ...formData, totalStock: e.target.value })
+                  }
                 />
               </div>
               <div className='space-y-2'>
@@ -212,25 +276,39 @@ export default function BookInput() {
                 <Input
                   name='availableStock'
                   type='number'
+                  min={0}
                   placeholder='1'
                   required
+                  value={formData.availableStock}
+                  onChange={(e) =>
+                    setFormData({ ...formData, availableStock: e.target.value })
+                  }
                 />
               </div>
             </div>
             <div className='space-y-2'>
               <Label>简介</Label>
-              <Input name='description' placeholder='图书简介（选填）' />
+              <Input
+                name='description'
+                placeholder='图书简介（选填）'
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+              />
             </div>
             <div className='space-y-2'>
               <Label>封面图片 URL</Label>
-              <Input name='coverImage' placeholder='图片链接（选填）' />
+              <Input
+                name='coverImage'
+                placeholder='图片链接（选填）'
+                value={formData.coverImage}
+                onChange={(e) =>
+                  setFormData({ ...formData, coverImage: e.target.value })
+                }
+              />
             </div>
             <SheetFooter className='pt-4'>
-              <SheetClose asChild>
-                <Button type='button' variant='outline'>
-                  取消
-                </Button>
-              </SheetClose>
               <Button type='submit'>确认录入</Button>
             </SheetFooter>
           </form>
