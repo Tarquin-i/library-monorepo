@@ -8,7 +8,10 @@ export const listBooksQuery = {
   queryFn: async () => {
     const res = await client.books.$get();
     const json = await res.json();
-    return json.data;
+    if ('data' in json) {
+      return json.data;
+    }
+    throw new Error(json.message || '获取书籍列表失败');
   },
 };
 
