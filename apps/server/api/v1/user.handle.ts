@@ -15,8 +15,13 @@ const app = new Hono()
   })
   // 获取用户列表
   .get('/users', async (c) => {
-    const result = await db.select().from(user);
-    return c.json({ data: result });
+    try {
+      const result = await db.select().from(user);
+      return c.json({ data: result });
+    } catch (error) {
+      console.error('获取用户列表失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
+    }
   })
   // 修改用户角色
   .patch(
@@ -34,21 +39,26 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const { id } = c.req.valid('param');
-      const { role } = await c.req.valid('json');
+      try {
+        const { id } = c.req.valid('param');
+        const { role } = await c.req.valid('json');
 
-      // 使用 returning() 获取更新后的用户数据，不用再单独查询一次
-      const result = await db
-        .update(user)
-        .set({ role })
-        .where(eq(user.id, id))
-        .returning();
+        // 使用 returning() 获取更新后的用户数据，不用再单独查询一次
+        const result = await db
+          .update(user)
+          .set({ role })
+          .where(eq(user.id, id))
+          .returning();
 
-      if (result.length === 0) {
-        return c.json({ message: '用户不存在' }, 404);
+        if (result.length === 0) {
+          return c.json({ message: '用户不存在' }, 404);
+        }
+
+        return c.json({ data: result[0] });
+      } catch (error) {
+        console.error('修改用户角色失败:', error);
+        return c.json({ message: '服务器错误，请稍后重试' }, 500);
       }
-
-      return c.json({ data: result[0] });
     },
   );
 

@@ -23,34 +23,44 @@ const createBookSchema = z.object({
 const app = new Hono()
   // 获取书籍列表
   .get('/books', async (c) => {
-    const result = await db.select().from(book);
-    return c.json({ data: result });
+    try {
+      const result = await db.select().from(book);
+      return c.json({ data: result });
+    } catch (error) {
+      console.error('获取书籍列表失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
+    }
   })
   // 录入书籍
   .post('/books', zValidator('json', createBookSchema), async (c) => {
-    const data = c.req.valid('json');
+    try {
+      const data = c.req.valid('json');
 
-    // 查询书籍是否存在
-    const existing = await db
-      .select()
-      .from(book)
-      .where(eq(book.ISBN, data.ISBN));
-    if (existing.length > 0) {
-      // ISBN已存在，馆藏和可借+1
-      const result = await db
-        .update(book)
-        .set({
-          totalStock: sql`${book.totalStock} + 1`,
-          availableStock: sql`${book.availableStock} + 1`,
-        })
-        .where(eq(book.ISBN, data.ISBN))
-        .returning();
-      return c.json({ data: result[0] }, 200);
+      // 查询书籍是否存在
+      const existing = await db
+        .select()
+        .from(book)
+        .where(eq(book.ISBN, data.ISBN));
+      if (existing.length > 0) {
+        // ISBN已存在，馆藏和可借+1
+        const result = await db
+          .update(book)
+          .set({
+            totalStock: sql`${book.totalStock} + 1`,
+            availableStock: sql`${book.availableStock} + 1`,
+          })
+          .where(eq(book.ISBN, data.ISBN))
+          .returning();
+        return c.json({ data: result[0] }, 200);
+      }
+
+      const result = await db.insert(book).values(data).returning();
+
+      return c.json({ data: result[0] }, 201);
+    } catch (error) {
+      console.error('录入书籍失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
     }
-
-    const result = await db.insert(book).values(data).returning();
-
-    return c.json({ data: result[0] }, 201);
   });
 
 export default app;
