@@ -2,24 +2,14 @@ import { useState } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { listBooksQuery } from '@/api/book.query';
-import { useQuery } from '@tanstack/react-query';
 import { Search, Plus } from 'lucide-react';
-import { BookInputForm } from '@/components/book-input-form';
+import { BookInputForm } from '@/app/admin/book-input/components/book-input-form';
+import { BookListTable } from '@/app/admin/book-input/components/book-list-table';
 
 export default function BookInput() {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const { data: books = [] } = useQuery(listBooksQuery);
 
   return (
     <SidebarProvider
@@ -53,38 +43,7 @@ export default function BookInput() {
           </div>
 
           <div className='rounded-md border'>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ISBN</TableHead>
-                  <TableHead>书名</TableHead>
-                  <TableHead>作者</TableHead>
-                  <TableHead>出版社</TableHead>
-                  <TableHead>分类</TableHead>
-                  <TableHead>价格</TableHead>
-                  <TableHead>馆藏数量</TableHead>
-                  <TableHead>可借数量</TableHead>
-                  <TableHead>状态</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {books.map((b) => (
-                  <TableRow key={b.ISBN}>
-                    <TableCell className='font-mono text-sm'>
-                      {b.ISBN}
-                    </TableCell>
-                    <TableCell className='font-medium'>{b.bookName}</TableCell>
-                    <TableCell>{b.author}</TableCell>
-                    <TableCell>{b.publisher}</TableCell>
-                    <TableCell>{b.category}</TableCell>
-                    <TableCell>¥{b.price}</TableCell>
-                    <TableCell>{b.totalStock}</TableCell>
-                    <TableCell>{b.availableStock}</TableCell>
-                    <TableCell>{b.status}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <BookListTable />
           </div>
         </div>
       </SidebarInset>

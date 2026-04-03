@@ -1,4 +1,4 @@
-import Dashboard from '@/app/main/dashboard';
+import Dashboard from '@/app/main/dashboard/dashboard';
 import { roleCheck } from '@/lib/route-guard';
 import { createFileRoute } from '@tanstack/react-router';
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { roleCheck } from '@/lib/route-guard';
-import BookBorrowing from '@/app/main/book-borrowing';
+import BookBorrowing from '@/app/main/book-borrowing/book-borrowing';
 
 export const Route = createFileRoute('/book-borrowing')({
   beforeLoad: async () => {

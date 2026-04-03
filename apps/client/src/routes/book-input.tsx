@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { roleCheck } from '@/lib/route-guard';
-import BookInput from '@/app/admin/book-input';
+import BookInput from '@/app/admin/book-input/book-input';
 
 export const Route = createFileRoute('/book-input')({
   beforeLoad: async () => {

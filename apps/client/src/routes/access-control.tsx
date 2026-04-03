@@ -1,4 +1,4 @@
-import AccessControl from '@/app/admin/access-control';
+import AccessControl from '@/app/admin/access-control/access-control';
 import { roleCheck } from '@/lib/route-guard';
 import { createFileRoute } from '@tanstack/react-router';
 
