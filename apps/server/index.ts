@@ -2,11 +2,14 @@ import { Hono } from 'hono';
 import api from './api/route';
 import { auth } from './lib/auth';
 import { initCors } from './lib/cors';
+import { requireAuth } from './lib/permission';
 
 const app = new Hono();
 
 // CORS
 initCors(app);
+
+app.use('/api/v1/*', requireAuth);
 
 // 业务路由
 const routes = app.route('/api', api);

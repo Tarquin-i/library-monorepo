@@ -4,17 +4,18 @@ import { user } from '@demo/db/schema/user.entity';
 import { eq } from 'drizzle-orm';
 import { zValidator } from '@hono/zod-validator';
 import z from 'zod';
+import { requireRole } from '../../lib/permission';
 
 // 可用角色列表
 const validRoles = ['admin', 'librarian', 'reader'];
 
 const app = new Hono()
   // 获取可用角色列表
-  .get('/roles', (c) => {
+  .get('/roles', requireRole('admin'), (c) => {
     return c.json({ data: validRoles });
   })
   // 获取用户列表
-  .get('/users', async (c) => {
+  .get('/users', requireRole('admin'), async (c) => {
     try {
       const result = await db.select().from(user);
       return c.json({ data: result });
@@ -26,6 +27,7 @@ const app = new Hono()
   // 修改用户角色
   .patch(
     '/users/:id/role',
+    requireRole('admin'),
     zValidator(
       'param',
       z.object({

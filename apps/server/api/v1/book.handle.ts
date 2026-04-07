@@ -4,6 +4,7 @@ import { book } from '@demo/db/schema/book.entity';
 import { zValidator } from '@hono/zod-validator';
 import { eq, sql } from 'drizzle-orm';
 import z from 'zod';
+import { requireRole } from '../../lib/permission';
 
 // 录入书籍的参数校验
 const createBookSchema = z.object({
@@ -32,7 +33,7 @@ const app = new Hono()
     }
   })
   // 录入书籍
-  .post('/books', zValidator('json', createBookSchema), async (c) => {
+  .post('/books', requireRole('admin', 'librarian'), zValidator('json', createBookSchema), async (c) => {
     try {
       const data = c.req.valid('json');
 
