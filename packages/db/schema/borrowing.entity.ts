@@ -1,4 +1,11 @@
-import { pgEnum, pgTable, text, timestamp, serial } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  serial,
+  integer,
+} from 'drizzle-orm/pg-core';
 import { user } from './user.entity';
 import { book } from './book.entity';
 import { relations } from 'drizzle-orm';
@@ -24,6 +31,9 @@ export const borrowingRecord = pgTable('borrowing_record', {
   borrowDate: timestamp('borrow_date'), // 原定借阅时间
   dueDate: timestamp('due_date'), // 应归还时间
   returnDate: timestamp('return_date'), // 实际归还时间
+
+  overdueDays: integer('overdue_days').default(0), // 逾期天数
+  renewalCount: integer('renewal_count').default(0).notNull(), // 续借次数
 
   reviewerId: text('reviewer_id').references(() => user.id, {
     onDelete: 'set null',

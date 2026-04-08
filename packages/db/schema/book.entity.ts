@@ -1,10 +1,22 @@
-import { pgTable, text, timestamp, integer, real, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  timestamp,
+  integer,
+  real,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 
-export const bookStatusEnum = pgEnum('book_status', ['available', 'borrowed', 'lost', 'scrapped']);
+export const bookStatusEnum = pgEnum('book_status', [
+  'available',
+  'borrowed',
+  'lost',
+  'scrapped',
+]);
 
 export const book = pgTable('book', {
   ISBN: text('isbn').primaryKey(),
-  bookName: text('name').notNull(),
+  bookName: text('book_name').notNull(),
   author: text('author').notNull(),
   publisher: text('publisher').notNull(),
   publishDate: text('publish_date').notNull(),
