@@ -100,12 +100,12 @@ const app = new Hono()
           .where(eq(renewalRecord.id, id))
           .returning();
 
-        // 更新借阅记录的dueDate
+        // 更新借阅记录的 dueDate 和 renewalCount
         await db
           .update(borrowingRecord)
-          // 在原来的基础上加上续期天数
           .set({
             dueDate: sql`${borrowingRecord.dueDate} + ${existing[0].renewalDays} * interval '1 day'`,
+            renewalCount: sql`${borrowingRecord.renewalCount} + 1`,
           })
           .where(eq(borrowingRecord.id, existing[0].borrowingId));
 

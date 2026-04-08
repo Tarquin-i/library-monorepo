@@ -3,7 +3,7 @@ import { db } from '@demo/db';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { book } from '@demo/db/schema/book.entity';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
 import { requireRole } from '../../lib/permission';
 
@@ -28,10 +28,42 @@ const app = new Hono()
         }
 
         if (
-          bookRes[0].status !== 'available' ||
-          bookRes[0].availableStock <= 0
+          bookRes[0].availableStock <= 0 ||
+          bookRes[0].status === 'lost' ||
+          bookRes[0].status === 'scrapped'
         ) {
           return c.json({ message: '可借图书库存不足' }, 400);
+        }
+
+        // 校验：用户当前借阅数量不能超过5本
+        const currentBorrowings = await db
+          .select()
+          .from(borrowingRecord)
+          .where(
+            and(
+              eq(borrowingRecord.userId, userId),
+              eq(borrowingRecord.status, 'approved'),
+            ),
+          );
+
+        if (currentBorrowings.length >= 5) {
+          return c.json({ message: '您已借阅5本书籍，无法继续借阅' }, 400);
+        }
+
+        // 校验：用户是否有逾期未归还的书籍
+        const overdueBooks = await db
+          .select()
+          .from(borrowingRecord)
+          .where(
+            and(
+              eq(borrowingRecord.userId, userId),
+              eq(borrowingRecord.status, 'approved'),
+              sql`${borrowingRecord.dueDate} < NOW()`, // 当前时间大于归还时间（逾期）
+            ),
+          );
+
+        if (overdueBooks.length > 0) {
+          return c.json({ message: '您有逾期未归还的书籍，无法借阅新书' }, 400);
         }
 
         const result = await db
@@ -51,15 +83,19 @@ const app = new Hono()
     },
   )
   // 管理员获取借阅申请列表
-  .get('/borrowings/applications', requireRole('admin', 'librarian'), async (c) => {
-    try {
-      const result = await db.select().from(borrowingRecord);
-      return c.json({ data: result });
-    } catch (error) {
-      console.error('获取申请列表失败:', error);
-      return c.json({ message: '服务器错误，请稍后重试' }, 500);
-    }
-  })
+  .get(
+    '/borrowings/applications',
+    requireRole('admin', 'librarian'),
+    async (c) => {
+      try {
+        const result = await db.select().from(borrowingRecord);
+        return c.json({ data: result });
+      } catch (error) {
+        console.error('获取申请列表失败:', error);
+        return c.json({ message: '服务器错误，请稍后重试' }, 500);
+      }
+    },
+  )
   // 取消借阅申请
   .patch(
     '/borrowings/applications/:id/cancel',
@@ -105,7 +141,7 @@ const app = new Hono()
         const { reviewerId } = c.req.valid('json');
         const borrowDate = new Date();
         const dueDate = new Date();
-        dueDate.setDate(borrowDate.getDate() + 30); // 默认借阅30天
+        dueDate.setDate(borrowDate.getDate() + 30); //LINK 默认借阅30天
 
         const result = await db
           .update(borrowingRecord)
@@ -199,20 +235,34 @@ const app = new Hono()
         }
 
         const returnDate = new Date();
+        const dueDate = existing[0].dueDate;
+        let overdueDays = 0;
 
-        // 更新借阅记录状态为已归还，设置实际归还时间
+        // 计算逾期天数
+        if (dueDate && returnDate > dueDate) {
+          overdueDays = Math.ceil(
+            (returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24),
+          );
+        }
+
+        // 更新借阅记录状态为已归还，设置实际归还时间和逾期天数
         const result = await db
           .update(borrowingRecord)
           .set({
             status: 'returned',
             returnDate,
+            overdueDays,
           })
           .where(eq(borrowingRecord.id, id))
           .returning();
 
+        // 一次性更新库存和状态
         await db
           .update(book)
-          .set({ availableStock: sql`${book.availableStock} + 1` })
+          .set({
+            availableStock: sql`${book.availableStock} + 1`,
+            status: sql`CASE WHEN ${book.status} IN ('borrowed', 'lost') THEN 'available'::"book_status" ELSE ${book.status} END`,
+          })
           .where(eq(book.ISBN, result[0].ISBN));
 
         return c.json({ data: result[0] });

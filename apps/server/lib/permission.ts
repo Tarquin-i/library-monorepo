@@ -11,6 +11,7 @@ export const requireAuth = async (c: Context, next: Next) => {
     return c.json({ message: '未登录' }, 401);
   }
 
+  // 挂到 hono 的请求上下文，后续可以通过 c.get('user') 获取到用户信息
   c.set('user', session.user);
 
   await next();
