@@ -3,7 +3,7 @@ import { db } from '@demo/db';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { book } from '@demo/db/schema/book.entity';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, sql, and, isNull } from 'drizzle-orm';
 import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
 import { requireRole } from '../../lib/permission';
 
@@ -35,7 +35,7 @@ const app = new Hono()
           return c.json({ message: '可借图书库存不足' }, 400);
         }
 
-        // 校验：用户当前借阅数量不能超过5本
+        // 用户当前借阅数量不能超过5本
         const currentBorrowings = await db
           .select()
           .from(borrowingRecord)
@@ -43,6 +43,7 @@ const app = new Hono()
             and(
               eq(borrowingRecord.userId, userId),
               eq(borrowingRecord.status, 'approved'),
+              isNull(borrowingRecord.returnDate), // 只统计未归还的借阅
             ),
           );
 
@@ -50,7 +51,7 @@ const app = new Hono()
           return c.json({ message: '您已借阅5本书籍，无法继续借阅' }, 400);
         }
 
-        // 校验：用户是否有逾期未归还的书籍
+        // 用户是否有逾期未归还的书籍
         const overdueBooks = await db
           .select()
           .from(borrowingRecord)
@@ -66,6 +67,7 @@ const app = new Hono()
           return c.json({ message: '您有逾期未归还的书籍，无法借阅新书' }, 400);
         }
 
+        // 插入借阅记录
         const result = await db
           .insert(borrowingRecord)
           .values({
@@ -84,11 +86,33 @@ const app = new Hono()
   )
   // 管理员获取借阅申请列表
   .get(
-    '/borrowings/applications',
+    '/borrowings',
     requireRole('admin', 'librarian'),
+    zValidator(
+      'query',
+      z.object({
+        status: z.string().optional(),
+        userId: z.string().optional(),
+        ISBN: z.string().optional(),
+      }),
+    ),
     async (c) => {
       try {
-        const result = await db.select().from(borrowingRecord);
+        const { status, userId, ISBN } = c.req.valid('query');
+
+        let query: any = db.select().from(borrowingRecord);
+
+        if (status) {
+          query = query.where(eq(borrowingRecord.status, status as any));
+        }
+        if (userId) {
+          query = query.where(eq(borrowingRecord.userId, userId));
+        }
+        if (ISBN) {
+          query = query.where(eq(borrowingRecord.ISBN, ISBN));
+        }
+
+        const result = await query;
         return c.json({ data: result });
       } catch (error) {
         console.error('获取申请列表失败:', error);
@@ -98,7 +122,7 @@ const app = new Hono()
   )
   // 取消借阅申请
   .patch(
-    '/borrowings/applications/:id/cancel',
+    '/borrowings/:id/cancel',
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
@@ -131,7 +155,7 @@ const app = new Hono()
   )
   // 审批借阅申请
   .patch(
-    '/borrowings/applications/:id/approve',
+    '/borrowings/:id/approve',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     zValidator('json', z.object({ reviewerId: z.string() })),
@@ -172,7 +196,7 @@ const app = new Hono()
   )
   // 拒绝借阅申请
   .patch(
-    '/borrowings/applications/:id/reject',
+    '/borrowings/:id/reject',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     zValidator(
@@ -280,48 +304,13 @@ const app = new Hono()
       try {
         const { userId } = c.req.valid('query');
 
-        const result = await db
-          .select()
-          .from(borrowingRecord)
-          .where(eq(borrowingRecord.userId, userId));
-
-        return c.json({ data: result });
-      } catch (error) {
-        console.error('查询借阅记录失败:', error);
-        return c.json({ message: '服务器错误，请稍后重试' }, 500);
-      }
-    },
-  )
-  // 管理员查询所有借阅记录
-  .get(
-    '/borrowings/records',
-    requireRole('admin', 'librarian'),
-    zValidator(
-      'query',
-      z.object({
-        status: z.string().optional(),
-        userId: z.string().optional(),
-        ISBN: z.string().optional(),
-      }),
-    ),
-    async (c) => {
-      try {
-        const { status, userId, ISBN } = c.req.valid('query');
-
-        //LINK 这里的 any 需要进一步处理一下
-        let query: any = db.select().from(borrowingRecord);
-
-        if (status) {
-          query = query.where(eq(borrowingRecord.status, status as any));
-        }
-        if (userId) {
-          query = query.where(eq(borrowingRecord.userId, userId));
-        }
-        if (ISBN) {
-          query = query.where(eq(borrowingRecord.ISBN, ISBN));
-        }
-
-        const result = await query;
+        // 使用 Drizzle 的关联查询，自动包含 book 信息
+        const result = await db.query.borrowingRecord.findMany({
+          where: eq(borrowingRecord.userId, userId),
+          with: {
+            book: true, // 自动关联查询 book 表
+          },
+        });
 
         return c.json({ data: result });
       } catch (error) {

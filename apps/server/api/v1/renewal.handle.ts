@@ -8,6 +8,39 @@ import { renewalRecord } from '@demo/db/schema/renewal.entity';
 import { requireRole } from '../../lib/permission';
 
 const app = new Hono()
+  // 查询续借记录
+  .get(
+    '/renewals',
+    requireRole('admin', 'librarian'),
+    zValidator(
+      'query',
+      z.object({
+        status: z.string().optional(),
+        borrowingId: z.string().transform(Number).optional(),
+      }),
+    ),
+    async (c) => {
+      try {
+        const { status, borrowingId } = c.req.valid('query');
+
+        let query: any = db.select().from(renewalRecord);
+
+        if (status) {
+          query = query.where(eq(renewalRecord.status, status as any));
+        }
+        if (borrowingId) {
+          query = query.where(eq(renewalRecord.borrowingId, borrowingId));
+        }
+
+        const result = await query;
+
+        return c.json({ data: result });
+      } catch (error) {
+        console.error('查询续借记录失败:', error);
+        return c.json({ message: '服务器错误，请稍后重试' }, 500);
+      }
+    },
+  )
   .post(
     '/renewals/apply',
     zValidator(
@@ -19,7 +52,7 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const { borrowingId, userId } = c.req.valid('json');
+        const { borrowingId } = c.req.valid('json');
 
         // 查询借阅记录
         const borrowing = await db
