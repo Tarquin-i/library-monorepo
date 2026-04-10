@@ -3,6 +3,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -37,6 +38,8 @@ export default function BookBorrowing() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedISBN, setSelectedISBN] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [borrowDays, setBorrowDays] = useState(30);
 
   const borrowMutation = useMutation({
     ...applyBorrowingMutation,
@@ -52,12 +55,13 @@ export default function BookBorrowing() {
     },
   });
 
-  // 打开弹窗，记录选中的书籍ISBN
+  // 打开弹窗，记录选中的书籍ISBN，重置表单
   const handleBorrowClick = (ISBN: string) => {
     setSelectedISBN(ISBN);
+    setQuantity(1);
+    setBorrowDays(30);
     setDialogOpen(true);
   };
-
 
   // 确认借阅，调用借阅申请接口
   const handleConfirmBorrow = () => {
@@ -66,6 +70,8 @@ export default function BookBorrowing() {
     borrowMutation.mutate({
       ISBN: selectedISBN,
       userId: session.user.id,
+      quantity,
+      borrowDays,
     });
   };
 
@@ -155,9 +161,35 @@ export default function BookBorrowing() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认借阅</AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要借阅这本书吗？
+              请填写借阅信息后确认提交
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className='grid gap-4 py-2'>
+            <div className='flex items-center gap-4'>
+              <Label className='w-20 text-right'>借阅数量</Label>
+              <Input
+                type='number'
+                min={1}
+                max={5}
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className='w-24'
+              />
+              <span className='text-sm text-muted-foreground'>本</span>
+            </div>
+            <div className='flex items-center gap-4'>
+              <Label className='w-20 text-right'>借阅天数</Label>
+              <Input
+                type='number'
+                min={1}
+                max={90}
+                value={borrowDays}
+                onChange={(e) => setBorrowDays(Number(e.target.value))}
+                className='w-24'
+              />
+              <span className='text-sm text-muted-foreground'>天</span>
+            </div>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBorrow}>

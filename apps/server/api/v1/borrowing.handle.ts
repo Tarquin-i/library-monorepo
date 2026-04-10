@@ -16,11 +16,13 @@ const app = new Hono()
       z.object({
         ISBN: z.string(),
         userId: z.string(),
+        quantity: z.number(),
+        borrowDays: z.number(),
       }),
     ),
     async (c) => {
       try {
-        const { ISBN, userId } = c.req.valid('json');
+        const { ISBN, userId, quantity, borrowDays } = c.req.valid('json');
         const bookRes = await db.select().from(book).where(eq(book.ISBN, ISBN));
 
         if (bookRes.length === 0) {
@@ -35,6 +37,10 @@ const app = new Hono()
           return c.json({ message: '可借图书库存不足' }, 400);
         }
 
+        if (bookRes[0].availableStock < quantity) {
+          return c.json({ message: `可借库存不足，当前可借 ${bookRes[0].availableStock} 本` }, 400);
+        }
+
         // 用户当前借阅数量不能超过5本
         const currentBorrowings = await db
           .select()
@@ -47,8 +53,8 @@ const app = new Hono()
             ),
           );
 
-        if (currentBorrowings.length >= 5) {
-          return c.json({ message: '您已借阅5本书籍，无法继续借阅' }, 400);
+        if (currentBorrowings.length + quantity > 5) {
+          return c.json({ message: `借阅数量超出限制，当前已借 ${currentBorrowings.length} 本，最多还能借 ${5 - currentBorrowings.length} 本` }, 400);
         }
 
         // 用户是否有逾期未归还的书籍
@@ -73,6 +79,8 @@ const app = new Hono()
           .values({
             userId,
             ISBN,
+            quantity,
+            borrowDays,
             status: 'pending',
           })
           .returning();
@@ -163,9 +171,20 @@ const app = new Hono()
       try {
         const { id } = c.req.valid('param');
         const { reviewerId } = c.req.valid('json');
+
+        const existing = await db
+          .select()
+          .from(borrowingRecord)
+          .where(eq(borrowingRecord.id, id));
+
+        if (existing.length === 0) {
+          return c.json({ message: '借阅记录不存在' }, 404);
+        }
+
         const borrowDate = new Date();
         const dueDate = new Date();
-        dueDate.setDate(borrowDate.getDate() + 30); //LINK 默认借阅30天
+        // 计算归还时间
+        dueDate.setDate(borrowDate.getDate() + (existing[0].borrowDays));
 
         const result = await db
           .update(borrowingRecord)
@@ -178,13 +197,9 @@ const app = new Hono()
           .where(eq(borrowingRecord.id, id))
           .returning();
 
-        if (result.length === 0) {
-          return c.json({ message: '借阅记录不存在' }, 404);
-        }
-
         await db
           .update(book)
-          .set({ availableStock: sql`${book.availableStock} - 1` })
+          .set({ availableStock: sql`${book.availableStock} - ${existing[0].quantity}` })  // 更新图书库存
           .where(eq(book.ISBN, result[0].ISBN));
 
         return c.json({ data: result[0] });

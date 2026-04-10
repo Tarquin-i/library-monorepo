@@ -32,6 +32,9 @@ export const borrowingRecord = pgTable('borrowing_record', {
   dueDate: timestamp('due_date'), // 应归还时间
   returnDate: timestamp('return_date'), // 实际归还时间
 
+  quantity: integer('quantity').notNull().default(1), // 借阅数量
+  borrowDays: integer('borrow_days').notNull().default(30), // 申请借阅天数
+
   overdueDays: integer('overdue_days').default(0), // 逾期天数
   renewalCount: integer('renewal_count').default(0).notNull(), // 续借次数
 
