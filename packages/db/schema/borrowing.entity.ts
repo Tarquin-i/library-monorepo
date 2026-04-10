@@ -50,6 +50,7 @@ export const borrowingRecordRelations = relations(
   borrowingRecord,
   ({ one }) => ({
     user: one(user, {
+      relationName: 'borrower',
       fields: [borrowingRecord.userId],
       references: [user.id],
     }),
@@ -58,6 +59,7 @@ export const borrowingRecordRelations = relations(
       references: [book.ISBN],
     }),
     reviewer: one(user, {
+      relationName: 'reviewer',
       fields: [borrowingRecord.reviewerId],
       references: [user.id],
     }),

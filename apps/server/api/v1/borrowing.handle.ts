@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { book } from '@demo/db/schema/book.entity';
 import { eq, sql, and, isNull } from 'drizzle-orm';
 import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
-import { requireRole } from '../../lib/permission';
+import { requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 借书申请
@@ -314,6 +314,7 @@ const app = new Hono()
   // 查询自己的借阅记录
   .get(
     '/borrowings/my-records',
+    requireAuth,
     zValidator('query', z.object({ userId: z.string() })),
     async (c) => {
       try {

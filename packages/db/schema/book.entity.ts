@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -6,6 +7,7 @@ import {
   real,
   pgEnum,
 } from 'drizzle-orm/pg-core';
+import { borrowingRecord } from './borrowing.entity';
 
 export const bookStatusEnum = pgEnum('book_status', [
   'available',
@@ -29,3 +31,7 @@ export const book = pgTable('book', {
   status: bookStatusEnum('status').notNull().default('available'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export const bookRelations = relations(book, ({ many }) => ({
+  borrowingRecord: many(borrowingRecord),
+}));

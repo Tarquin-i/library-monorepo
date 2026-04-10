@@ -16,6 +16,7 @@ import {
 import {
   LayoutDashboardIcon,
   ListIcon,
+  BookOpenCheckIcon,
   DatabaseIcon,
   FileChartColumnIcon,
   CommandIcon,
@@ -32,6 +33,11 @@ const navData = {
       title: '书籍借阅',
       url: '/book-borrowing',
       icon: <ListIcon />,
+    },
+    {
+      title: '我的借阅记录',
+      url: '/borrowing-records',
+      icon: <BookOpenCheckIcon />,
     },
     // {
     //   title: 'Analytics',
