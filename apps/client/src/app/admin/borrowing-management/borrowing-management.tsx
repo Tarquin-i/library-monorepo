@@ -1,0 +1,270 @@
+import { useState } from 'react';
+import { AppSidebar } from '@/components/app-sidebar';
+import { SiteHeader } from '@/components/site-header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  listBorrowingsQuery,
+  approveBorrowingMutation,
+  rejectBorrowingMutation,
+  returnBorrowingMutation,
+} from '@/api/borrowing.query';
+import { authClient } from '@/lib/better-auth';
+import { toast } from 'sonner';
+
+export default function BorrowingManagement() {
+  const { data: session } = authClient.useSession();
+  const reviewerId = session?.user?.id ?? ''; // 当前用户 id
+  const queryClient = useQueryClient();
+
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [rejectDialog, setRejectDialog] = useState<{
+    // 拒绝弹窗以及收集记录
+    open: boolean;
+    id: number | null;
+  }>({
+    open: false,
+    id: null,
+  });
+  const [rejectReason, setRejectReason] = useState('');
+
+  const status = statusFilter === 'all' ? undefined : statusFilter; // 传入 undefined 时显示全部
+  const { data: borrowings = [] } = useQuery(listBorrowingsQuery(status)); // 按状态查询
+
+  function getStatusBadge(s: string) {
+    switch (s) {
+      case 'pending':
+        return <Badge variant='secondary'>待审核</Badge>;
+      case 'approved':
+        return <Badge>已批准</Badge>;
+      case 'rejected':
+        return <Badge variant='destructive'>已拒绝</Badge>;
+      case 'cancelled':
+        return <Badge variant='outline'>已取消</Badge>;
+      case 'return_pending':
+        return <Badge variant='secondary'>归还审核中</Badge>;
+      case 'returned':
+        return <Badge variant='outline'>已归还</Badge>;
+      default:
+        return <Badge variant='outline'>{s}</Badge>;
+    }
+  }
+
+  const approveMutation = useMutation({
+    ...approveBorrowingMutation,
+    onSuccess: () => {
+      toast.success('借阅申请已批准');
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || '审批失败');
+    },
+  });
+
+  const rejectMutation = useMutation({
+    ...rejectBorrowingMutation,
+    onSuccess: () => {
+      toast.success('借阅申请已拒绝');
+      setRejectDialog({ open: false, id: null });
+      setRejectReason('');
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || '拒绝失败');
+    },
+  });
+
+  const returnMutation = useMutation({
+    ...returnBorrowingMutation,
+    onSuccess: () => {
+      toast.success('归还办理成功');
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || '归还失败');
+    },
+  });
+
+  function handleRejectConfirm() {
+    if (!rejectDialog.id || !rejectReason.trim()) return;
+    rejectMutation.mutate({
+      id: rejectDialog.id,
+      reviewerId,
+      rejectReason: rejectReason.trim(),
+    });
+  }
+
+  return (
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 12)',
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant='inset' />
+      <SidebarInset>
+        <SiteHeader />
+        <div className='px-4 py-6 lg:px-8'>
+          <div className='mb-6'>
+            <h1 className='text-2xl font-bold'>借阅管理</h1>
+            <p className='text-muted-foreground mt-1'>审核借阅申请，办理归还</p>
+          </div>
+
+          <div className='mb-4'>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className='w-40'>
+                <SelectValue placeholder='状态筛选' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>全部</SelectItem>
+                <SelectItem value='pending'>待审核</SelectItem>
+                <SelectItem value='approved'>已批准</SelectItem>
+                <SelectItem value='rejected'>已拒绝</SelectItem>
+                <SelectItem value='returned'>已归还</SelectItem>
+                <SelectItem value='cancelled'>已取消</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='rounded-md border'>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>用户ID</TableHead>
+                  <TableHead>ISBN</TableHead>
+                  <TableHead>数量</TableHead>
+                  <TableHead>借阅天数</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>申请时间</TableHead>
+                  <TableHead>到期时间</TableHead>
+                  <TableHead>操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {borrowings.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell>{record.id}</TableCell>
+                    <TableCell className='font-mono text-xs max-w-28 truncate'>
+                      {record.userId}
+                    </TableCell>
+                    <TableCell className='font-mono text-sm'>
+                      {record.ISBN}
+                    </TableCell>
+                    <TableCell>{record.quantity}</TableCell>
+                    <TableCell>{record.borrowDays} 天</TableCell>
+                    <TableCell>{getStatusBadge(record.status)}</TableCell>
+                    <TableCell>
+                      {String(record.createdAt).split('T')[0]}
+                    </TableCell>
+                    <TableCell>
+                      {record.dueDate
+                        ? String(record.dueDate).split('T')[0]
+                        : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex items-center gap-2'>
+                        {record.status === 'pending' && (
+                          <>
+                            <Button
+                              size='sm'
+                              onClick={() =>
+                                approveMutation.mutate({
+                                  id: record.id,
+                                  reviewerId,
+                                })
+                              }
+                            >
+                              批准
+                            </Button>
+                            <Button
+                              size='sm'
+                              variant='destructive'
+                              onClick={() => {
+                                setRejectDialog({ open: true, id: record.id });
+                                setRejectReason('');
+                              }}
+                            >
+                              拒绝
+                            </Button>
+                          </>
+                        )}
+                        {record.status === 'return_pending' && (
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => returnMutation.mutate(record.id)}
+                          >
+                            确认归还
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </SidebarInset>
+
+      {/* 拒绝原因弹窗 */}
+      <AlertDialog
+        open={rejectDialog.open}
+        onOpenChange={(open) => setRejectDialog({ open, id: rejectDialog.id })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>拒绝借阅申请</AlertDialogTitle>
+            <AlertDialogDescription>
+              请填写拒绝原因，该原因将记录在借阅记录中。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <textarea
+            className='w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none min-h-20'
+            placeholder='请输入拒绝原因...'
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejectConfirm}
+            >
+              确认拒绝
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SidebarProvider>
+  );
+}
