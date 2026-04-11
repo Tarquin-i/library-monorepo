@@ -3,12 +3,44 @@ import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, inArray, and } from 'drizzle-orm';
 import { renewalRecord } from '@demo/db/schema/renewal.entity';
-import { requireRole } from '../../lib/permission';
+import { requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
-  // 查询续借记录
+  // 读者查询自己的续借记录
+  .get(
+    '/renewals/my-records',
+    requireAuth,
+    zValidator('query', z.object({ userId: z.string() })),
+    async (c) => {
+      try {
+        const { userId } = c.req.valid('query');
+
+        // 通过借阅记录关联查出该用户的所有续借申请
+        const borrowings = await db
+          .select({ id: borrowingRecord.id })
+          .from(borrowingRecord)
+          .where(eq(borrowingRecord.userId, userId));
+
+        if (borrowings.length === 0) {
+          return c.json({ data: [] });
+        }
+
+        const borrowingIds = borrowings.map((b) => b.id);
+        const result = await db
+          .select()
+          .from(renewalRecord)
+          .where(inArray(renewalRecord.borrowingId, borrowingIds));
+
+        return c.json({ data: result });
+      } catch (error) {
+        console.error('查询续借记录失败:', error);
+        return c.json({ message: '服务器错误，请稍后重试' }, 500);
+      }
+    },
+  )
+  // 管理员查询续借记录
   .get(
     '/renewals',
     requireRole('admin', 'librarian'),
@@ -23,17 +55,21 @@ const app = new Hono()
       try {
         const { status, borrowingId } = c.req.valid('query');
 
-        let query: any = db.select().from(renewalRecord);
+        type RenewalStatus = (typeof renewalRecord.$inferSelect)['status'];
 
-        if (status) {
-          query = query.where(eq(renewalRecord.status, status as any));
-        }
-        if (borrowingId) {
-          query = query.where(eq(renewalRecord.borrowingId, borrowingId));
-        }
-
-        const result = await query;
-
+        const result = await db
+          .select()
+          .from(renewalRecord)
+          .where(
+            and(
+              status
+                ? eq(renewalRecord.status, status as RenewalStatus)
+                : undefined,
+              borrowingId
+                ? eq(renewalRecord.borrowingId, borrowingId)
+                : undefined,
+            ),
+          );
         return c.json({ data: result });
       } catch (error) {
         console.error('查询续借记录失败:', error);
