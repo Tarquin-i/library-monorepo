@@ -10,8 +10,10 @@ import {
 import { Link } from '@tanstack/react-router';
 
 export function NavAdmin({
+  label = 'Admin',
   items,
 }: {
+  label?: string;
   items: {
     name: string;
     url: string;
@@ -20,7 +22,7 @@ export function NavAdmin({
 }) {
   return (
     <SidebarGroup className='group-data-[collapsible=icon]:hidden'>
-      <SidebarGroupLabel>Admin</SidebarGroupLabel>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>

@@ -9,15 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RenewalRecordsRouteImport } from './routes/renewal-records'
+import { Route as RenewalManagementRouteImport } from './routes/renewal-management'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BorrowingRecordsRouteImport } from './routes/borrowing-records'
+import { Route as BorrowingManagementRouteImport } from './routes/borrowing-management'
+import { Route as BookRenewalRouteImport } from './routes/book-renewal'
 import { Route as BookInputRouteImport } from './routes/book-input'
 import { Route as BookBorrowingRouteImport } from './routes/book-borrowing'
 import { Route as AccessControlRouteImport } from './routes/access-control'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RenewalRecordsRoute = RenewalRecordsRouteImport.update({
+  id: '/renewal-records',
+  path: '/renewal-records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RenewalManagementRoute = RenewalManagementRouteImport.update({
+  id: '/renewal-management',
+  path: '/renewal-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -36,6 +50,16 @@ const DashboardRoute = DashboardRouteImport.update({
 const BorrowingRecordsRoute = BorrowingRecordsRouteImport.update({
   id: '/borrowing-records',
   path: '/borrowing-records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BorrowingManagementRoute = BorrowingManagementRouteImport.update({
+  id: '/borrowing-management',
+  path: '/borrowing-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRenewalRoute = BookRenewalRouteImport.update({
+  id: '/book-renewal',
+  path: '/book-renewal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookInputRoute = BookInputRouteImport.update({
@@ -64,20 +88,28 @@ export interface FileRoutesByFullPath {
   '/access-control': typeof AccessControlRoute
   '/book-borrowing': typeof BookBorrowingRoute
   '/book-input': typeof BookInputRoute
+  '/book-renewal': typeof BookRenewalRoute
+  '/borrowing-management': typeof BorrowingManagementRoute
   '/borrowing-records': typeof BorrowingRecordsRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/renewal-management': typeof RenewalManagementRoute
+  '/renewal-records': typeof RenewalRecordsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/access-control': typeof AccessControlRoute
   '/book-borrowing': typeof BookBorrowingRoute
   '/book-input': typeof BookInputRoute
+  '/book-renewal': typeof BookRenewalRoute
+  '/borrowing-management': typeof BorrowingManagementRoute
   '/borrowing-records': typeof BorrowingRecordsRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/renewal-management': typeof RenewalManagementRoute
+  '/renewal-records': typeof RenewalRecordsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,10 +117,14 @@ export interface FileRoutesById {
   '/access-control': typeof AccessControlRoute
   '/book-borrowing': typeof BookBorrowingRoute
   '/book-input': typeof BookInputRoute
+  '/book-renewal': typeof BookRenewalRoute
+  '/borrowing-management': typeof BorrowingManagementRoute
   '/borrowing-records': typeof BorrowingRecordsRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/renewal-management': typeof RenewalManagementRoute
+  '/renewal-records': typeof RenewalRecordsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,30 +133,42 @@ export interface FileRouteTypes {
     | '/access-control'
     | '/book-borrowing'
     | '/book-input'
+    | '/book-renewal'
+    | '/borrowing-management'
     | '/borrowing-records'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/renewal-management'
+    | '/renewal-records'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/access-control'
     | '/book-borrowing'
     | '/book-input'
+    | '/book-renewal'
+    | '/borrowing-management'
     | '/borrowing-records'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/renewal-management'
+    | '/renewal-records'
   id:
     | '__root__'
     | '/'
     | '/access-control'
     | '/book-borrowing'
     | '/book-input'
+    | '/book-renewal'
+    | '/borrowing-management'
     | '/borrowing-records'
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/renewal-management'
+    | '/renewal-records'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -128,14 +176,32 @@ export interface RootRouteChildren {
   AccessControlRoute: typeof AccessControlRoute
   BookBorrowingRoute: typeof BookBorrowingRoute
   BookInputRoute: typeof BookInputRoute
+  BookRenewalRoute: typeof BookRenewalRoute
+  BorrowingManagementRoute: typeof BorrowingManagementRoute
   BorrowingRecordsRoute: typeof BorrowingRecordsRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  RenewalManagementRoute: typeof RenewalManagementRoute
+  RenewalRecordsRoute: typeof RenewalRecordsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/renewal-records': {
+      id: '/renewal-records'
+      path: '/renewal-records'
+      fullPath: '/renewal-records'
+      preLoaderRoute: typeof RenewalRecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/renewal-management': {
+      id: '/renewal-management'
+      path: '/renewal-management'
+      fullPath: '/renewal-management'
+      preLoaderRoute: typeof RenewalManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -162,6 +228,20 @@ declare module '@tanstack/react-router' {
       path: '/borrowing-records'
       fullPath: '/borrowing-records'
       preLoaderRoute: typeof BorrowingRecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/borrowing-management': {
+      id: '/borrowing-management'
+      path: '/borrowing-management'
+      fullPath: '/borrowing-management'
+      preLoaderRoute: typeof BorrowingManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book-renewal': {
+      id: '/book-renewal'
+      path: '/book-renewal'
+      fullPath: '/book-renewal'
+      preLoaderRoute: typeof BookRenewalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book-input': {
@@ -200,10 +280,14 @@ const rootRouteChildren: RootRouteChildren = {
   AccessControlRoute: AccessControlRoute,
   BookBorrowingRoute: BookBorrowingRoute,
   BookInputRoute: BookInputRoute,
+  BookRenewalRoute: BookRenewalRoute,
+  BorrowingManagementRoute: BorrowingManagementRoute,
   BorrowingRecordsRoute: BorrowingRecordsRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  RenewalManagementRoute: RenewalManagementRoute,
+  RenewalRecordsRoute: RenewalRecordsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

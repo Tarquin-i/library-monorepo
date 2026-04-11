@@ -20,6 +20,9 @@ import {
   DatabaseIcon,
   FileChartColumnIcon,
   CommandIcon,
+  ClipboardListIcon,
+  RefreshCwIcon,
+  HistoryIcon,
 } from 'lucide-react';
 import { authClient } from '@/lib/better-auth';
 const navData = {
@@ -35,48 +38,28 @@ const navData = {
       icon: <ListIcon />,
     },
     {
-      title: '我的借阅记录',
+      title: '借阅记录',
       url: '/borrowing-records',
       icon: <BookOpenCheckIcon />,
     },
-    // {
-    //   title: 'Analytics',
-    //   url: '/2',
-    //   icon: <ChartBarIcon />,
-    // },
-    // {
-    //   title: 'Projects',
-    //   url: '/3',
-    //   icon: <FolderIcon />,
-    // },
-    // {
-    //   title: 'Team',
-    //   url: '/4',
-    //   icon: <UsersIcon />,
-    // },
-  ],
-  admin: [
     {
-      name: '权限管理',
-      url: '/access-control',
-      icon: <DatabaseIcon />,
+      title: '书籍续借',
+      url: '/book-renewal',
+      icon: <RefreshCwIcon />,
     },
     {
-      name: '书籍录入',
-      url: '/book-input',
-      icon: <FileChartColumnIcon />,
+      title: '续借记录',
+      url: '/renewal-records',
+      icon: <HistoryIcon />,
     },
-    // {
-    //   name: 'Word Assistant',
-    //   url: '/10',
-    //   icon: <FileIcon />,
-    // },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data } = authClient.useSession();
-  const isAdmin = data?.user?.role === 'admin';
+  const role = data?.user?.role;
+  const isAdmin = role === 'admin';
+  const isStaff = isAdmin || role === 'librarian';
 
   return (
     <Sidebar collapsible='offcanvas' {...props}>
@@ -97,7 +80,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
-        {isAdmin && <NavAdmin items={navData.admin} />}
+        {isStaff && (
+          <NavAdmin
+            label='图书管理员'
+            items={[
+              {
+                name: '书籍录入',
+                url: '/book-input',
+                icon: <FileChartColumnIcon />,
+              },
+              {
+                name: '借阅管理',
+                url: '/borrowing-management',
+                icon: <ClipboardListIcon />,
+              },
+              {
+                name: '续借管理',
+                url: '/renewal-management',
+                icon: <RefreshCwIcon />,
+              },
+            ]}
+          />
+        )}
+        {isAdmin && (
+          <NavAdmin
+            label='Admin'
+            items={[
+              {
+                name: '权限管理',
+                url: '/access-control',
+                icon: <DatabaseIcon />,
+              },
+            ]}
+          />
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
