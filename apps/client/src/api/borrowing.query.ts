@@ -49,3 +49,90 @@ export const cancelBorrowingMutation = {
     return json.data;
   },
 };
+
+// 读者申请归还
+export const requestReturnMutation = {
+  mutationFn: async (id: number) => {
+    const res = await client.borrowings[':id']['request-return'].$patch({
+      param: { id: String(id) },
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '申请归还失败');
+    }
+    return json.data;
+  },
+};
+
+// 管理员获取借阅申请列表
+export const listBorrowingsQuery = (status?: string) => ({
+  queryKey: ['borrowings', status],
+  queryFn: async () => {
+    const res = await client.borrowings.$get({
+      query: status ? { status } : {},
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '获取借阅列表失败');
+    }
+    return json.data;
+  },
+});
+
+// 管理员批准借阅申请
+export const approveBorrowingMutation = {
+  mutationFn: async ({
+    id,
+    reviewerId,
+  }: {
+    id: number;
+    reviewerId: string;
+  }) => {
+    const res = await client.borrowings[':id'].approve.$patch({
+      param: { id: String(id) },
+      json: { reviewerId },
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '审批失败');
+    }
+    return json.data;
+  },
+};
+
+// 管理员拒绝借阅申请
+export const rejectBorrowingMutation = {
+  mutationFn: async ({
+    id,
+    reviewerId,
+    rejectReason,
+  }: {
+    id: number;
+    reviewerId: string;
+    rejectReason: string;
+  }) => {
+    const res = await client.borrowings[':id'].reject.$patch({
+      param: { id: String(id) },
+      json: { reviewerId, rejectReason },
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '拒绝失败');
+    }
+    return json.data;
+  },
+};
+
+// 管理员办理归还
+export const returnBorrowingMutation = {
+  mutationFn: async (id: number) => {
+    const res = await client.borrowings[':id'].return.$patch({
+      param: { id: String(id) },
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '归还失败');
+    }
+    return json.data;
+  },
+};
