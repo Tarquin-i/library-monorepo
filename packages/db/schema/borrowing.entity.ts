@@ -12,10 +12,11 @@ import { relations } from 'drizzle-orm';
 
 export const borrowingStatusEnum = pgEnum('borrowing_status', [
   'pending',
-  'returned',
   'approved',
   'rejected',
   'cancelled',
+  'return_pending',
+  'returned',
 ]);
 
 export const borrowingRecord = pgTable('borrowing_record', {
