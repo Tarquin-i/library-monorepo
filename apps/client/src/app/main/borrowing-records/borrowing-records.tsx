@@ -15,7 +15,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   myBorrowingRecordsQuery,
   cancelBorrowingMutation,
+  requestReturnMutation,
 } from '@/api/borrowing.query';
+import { applyRenewalMutation } from '@/api/renewal.query';
 import { authClient } from '@/lib/better-auth';
 import { toast } from 'sonner';
 
@@ -36,6 +38,8 @@ export default function BorrowingRecords() {
         return <Badge variant='destructive'>已拒绝</Badge>;
       case 'cancelled':
         return <Badge variant='outline'>已取消</Badge>;
+      case 'return_pending':
+        return <Badge variant='secondary'>归还审核中</Badge>;
       case 'returned':
         return <Badge variant='outline'>已归还</Badge>;
       default:
@@ -43,16 +47,31 @@ export default function BorrowingRecords() {
     }
   }
 
-  const cancelMutation = useMutation({
+  const cancelMut = useMutation({
     ...cancelBorrowingMutation,
     onSuccess: () => {
       toast.success('借阅申请已取消');
-      // 更新表格状态
       queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
     },
-    onError: (error: Error) => {
-      toast.error(error.message || '取消失败');
+    onError: (error: Error) => toast.error(error.message || '取消失败'),
+  });
+
+  const requestReturnMut = useMutation({
+    ...requestReturnMutation,
+    onSuccess: () => {
+      toast.success('归还申请已提交，等待管理员确认');
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
     },
+    onError: (error: Error) => toast.error(error.message || '申请归还失败'),
+  });
+
+  const renewalMutation = useMutation({
+    ...applyRenewalMutation,
+    onSuccess: () => {
+      toast.success('续借申请已提交，等待管理员审批');
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
+    },
+    onError: (error: Error) => toast.error(error.message || '续借申请失败'),
   });
 
   return (
@@ -100,23 +119,52 @@ export default function BorrowingRecords() {
                     </TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>
-                      {/* 截取 T 字符前面的字符串，T 做分隔符 */}
                       {String(record.createdAt).split('T')[0]}
                     </TableCell>
                     <TableCell>
-                      {record.dueDate ? String(record.dueDate).split('T')[0] : '-'}
+                      {record.dueDate
+                        ? String(record.dueDate).split('T')[0]
+                        : '-'}
                     </TableCell>
                     <TableCell>
-                      {record.status === 'pending' && (
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={() => cancelMutation.mutate(record.id)}
-                          disabled={cancelMutation.isPending}
-                        >
-                          取消申请
-                        </Button>
-                      )}
+                      <div className='flex items-center gap-2'>
+                        {record.status === 'pending' && (
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => cancelMut.mutate(record.id)}
+                            disabled={cancelMut.isPending}
+                          >
+                            取消申请
+                          </Button>
+                        )}
+                        {record.status === 'approved' && (
+                          <>
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={() => requestReturnMut.mutate(record.id)}
+                              disabled={requestReturnMut.isPending}
+                            >
+                              申请归还
+                            </Button>
+                            {record.renewalCount === 0 && (
+                              <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={() =>
+                                  renewalMutation.mutate({
+                                    borrowingId: record.id,
+                                    userId,
+                                  })
+                                }
+                              >
+                                申请续借
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
