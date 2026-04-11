@@ -3,7 +3,7 @@ import { db } from '@demo/db';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { book } from '@demo/db/schema/book.entity';
-import { eq, sql, and, isNull } from 'drizzle-orm';
+import { eq, sql, and, inArray } from 'drizzle-orm';
 import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
 import { requireAuth, requireRole } from '../../lib/permission';
 
@@ -38,23 +38,43 @@ const app = new Hono()
         }
 
         if (bookRes[0].availableStock < quantity) {
-          return c.json({ message: `可借库存不足，当前可借 ${bookRes[0].availableStock} 本` }, 400);
+          return c.json(
+            {
+              message: `可借库存不足，当前可借 ${bookRes[0].availableStock} 本`,
+            },
+            400,
+          );
         }
 
-        // 用户当前借阅数量不能超过5本
+        // 统计用户当前有效借阅数量（pending + approved 均计入，防止重复提交绕过限制）
         const currentBorrowings = await db
           .select()
           .from(borrowingRecord)
           .where(
             and(
               eq(borrowingRecord.userId, userId),
-              eq(borrowingRecord.status, 'approved'),
-              isNull(borrowingRecord.returnDate), // 只统计未归还的借阅
+              //
+              inArray(borrowingRecord.status, [
+                'pending',
+                'approved',
+                'return_pending',
+              ]),
             ),
           );
 
-        if (currentBorrowings.length + quantity > 5) {
-          return c.json({ message: `借阅数量超出限制，当前已借 ${currentBorrowings.length} 本，最多还能借 ${5 - currentBorrowings.length} 本` }, 400);
+        // 查询三种状态，并且累加三种状态的 quantity ，得到当前已借阅，申请中和归还中的总数
+        const currentCount = currentBorrowings.reduce(
+          (sum, r) => sum + r.quantity,
+          0,
+        );
+
+        if (currentCount + quantity > 5) {
+          return c.json(
+            {
+              message: `借阅数量超出限制，当前已有 ${currentCount} 本在借/待审核，最多还能借 ${5 - currentCount} 本`,
+            },
+            400,
+          );
         }
 
         // 用户是否有逾期未归还的书籍
@@ -108,19 +128,20 @@ const app = new Hono()
       try {
         const { status, userId, ISBN } = c.req.valid('query');
 
-        let query: any = db.select().from(borrowingRecord);
+        type BorrowingStatus = (typeof borrowingRecord.$inferSelect)['status']; // 从表 borrowingRecord 中推断 status 字段
 
-        if (status) {
-          query = query.where(eq(borrowingRecord.status, status as any));
-        }
-        if (userId) {
-          query = query.where(eq(borrowingRecord.userId, userId));
-        }
-        if (ISBN) {
-          query = query.where(eq(borrowingRecord.ISBN, ISBN));
-        }
-
-        const result = await query;
+        const result = await db
+          .select()
+          .from(borrowingRecord)
+          .where(
+            and(
+              status
+                ? eq(borrowingRecord.status, status as BorrowingStatus) // 如果是 undefined 就直接忽略，不会加进 sql 里面
+                : undefined,
+              userId ? eq(borrowingRecord.userId, userId) : undefined,
+              ISBN ? eq(borrowingRecord.ISBN, ISBN) : undefined,
+            ),
+          );
         return c.json({ data: result });
       } catch (error) {
         console.error('获取申请列表失败:', error);
@@ -184,7 +205,7 @@ const app = new Hono()
         const borrowDate = new Date();
         const dueDate = new Date();
         // 计算归还时间
-        dueDate.setDate(borrowDate.getDate() + (existing[0].borrowDays));
+        dueDate.setDate(borrowDate.getDate() + existing[0].borrowDays);
 
         const result = await db
           .update(borrowingRecord)
@@ -199,7 +220,9 @@ const app = new Hono()
 
         await db
           .update(book)
-          .set({ availableStock: sql`${book.availableStock} - ${existing[0].quantity}` })  // 更新图书库存
+          .set({
+            availableStock: sql`${book.availableStock} - ${existing[0].quantity}`,
+          }) // 更新图书库存
           .where(eq(book.ISBN, result[0].ISBN));
 
         return c.json({ data: result[0] });
@@ -252,7 +275,41 @@ const app = new Hono()
       }
     },
   )
-  // 归还图书
+  // 读者申请归还
+  .patch(
+    '/borrowings/:id/request-return',
+    requireAuth,
+    zValidator('param', z.object({ id: z.string().transform(Number) })),
+    async (c) => {
+      try {
+        const { id } = c.req.valid('param');
+
+        const existing = await db
+          .select()
+          .from(borrowingRecord)
+          .where(eq(borrowingRecord.id, id));
+
+        if (existing.length === 0) {
+          return c.json({ message: '借阅记录不存在' }, 404);
+        }
+        if (existing[0].status !== 'approved') {
+          return c.json({ message: '只能对已批准的借阅发起归还申请' }, 400);
+        }
+
+        const result = await db
+          .update(borrowingRecord)
+          .set({ status: 'return_pending' })
+          .where(eq(borrowingRecord.id, id))
+          .returning();
+
+        return c.json({ data: result[0] });
+      } catch (error) {
+        console.error('申请归还失败:', error);
+        return c.json({ message: '服务器错误，请稍后重试' }, 500);
+      }
+    },
+  )
+  // 管理员确认归还
   .patch(
     '/borrowings/:id/return',
     requireRole('admin', 'librarian'),
@@ -269,8 +326,8 @@ const app = new Hono()
         if (existing.length === 0) {
           return c.json({ message: '借阅记录不存在' }, 404);
         }
-        if (existing[0].status !== 'approved') {
-          return c.json({ message: '只能归还已批准的借阅' }, 400);
+        if (existing[0].status !== 'return_pending') {
+          return c.json({ message: '只能确认归还申请中的借阅记录' }, 400);
         }
 
         const returnDate = new Date();
@@ -284,18 +341,13 @@ const app = new Hono()
           );
         }
 
-        // 更新借阅记录状态为已归还，设置实际归还时间和逾期天数
         const result = await db
           .update(borrowingRecord)
-          .set({
-            status: 'returned',
-            returnDate,
-            overdueDays,
-          })
+          .set({ status: 'returned', returnDate, overdueDays })
           .where(eq(borrowingRecord.id, id))
           .returning();
 
-        // 一次性更新库存和状态
+        // 归还后回填库存
         await db
           .update(book)
           .set({
@@ -306,7 +358,7 @@ const app = new Hono()
 
         return c.json({ data: result[0] });
       } catch (error) {
-        console.error('归还图书失败:', error);
+        console.error('确认归还失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);
       }
     },
