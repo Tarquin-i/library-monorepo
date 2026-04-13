@@ -4,7 +4,10 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { eq, sql, inArray, and } from 'drizzle-orm';
-import { renewalRecord } from '@demo/db/schema/renewal.entity';
+import {
+  renewalRecord,
+  renewalStatusEnum,
+} from '@demo/db/schema/renewal.entity';
 import { requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
@@ -19,14 +22,15 @@ const app = new Hono()
 
         // 通过借阅记录关联查出该用户的所有续借申请
         const borrowings = await db
-          .select({ id: borrowingRecord.id })
+          .select()
           .from(borrowingRecord)
           .where(eq(borrowingRecord.userId, userId));
 
         if (borrowings.length === 0) {
-          return c.json({ data: [] });
+          return c.json({ message: '续借记录不存在' }, 404);
         }
 
+        // 记录所有借阅记录 id
         const borrowingIds = borrowings.map((b) => b.id);
         const result = await db
           .select()
@@ -47,7 +51,7 @@ const app = new Hono()
     zValidator(
       'query',
       z.object({
-        status: z.string().optional(),
+        status: z.enum(renewalStatusEnum.enumValues).optional(),
         borrowingId: z.string().transform(Number).optional(),
       }),
     ),
@@ -55,16 +59,12 @@ const app = new Hono()
       try {
         const { status, borrowingId } = c.req.valid('query');
 
-        type RenewalStatus = (typeof renewalRecord.$inferSelect)['status'];
-
         const result = await db
           .select()
           .from(renewalRecord)
           .where(
             and(
-              status
-                ? eq(renewalRecord.status, status as RenewalStatus)
-                : undefined,
+              status ? eq(renewalRecord.status, status) : undefined, // 筛选，如果传进去 undefined ，Drizzle 就会忽略
               borrowingId
                 ? eq(renewalRecord.borrowingId, borrowingId)
                 : undefined,
@@ -77,6 +77,7 @@ const app = new Hono()
       }
     },
   )
+  // 续借申请
   .post(
     '/renewals/apply',
     zValidator(
@@ -125,11 +126,10 @@ const app = new Hono()
           .values({
             borrowingId,
             status: 'pending',
-            renewalDays: 15, //LINK 默认续借15天，这里不是前端传来的吗，而是固定的
           })
           .returning();
 
-        return c.json({ data: result[0] }, 201);
+        return c.json({ data: result }, 201);
       } catch (error) {
         console.error('续借申请失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);
@@ -169,7 +169,7 @@ const app = new Hono()
           .where(eq(renewalRecord.id, id))
           .returning();
 
-        // 更新借阅记录的 dueDate 和 renewalCount
+        // 更新借阅记录的还书日期和续借次数
         await db
           .update(borrowingRecord)
           .set({

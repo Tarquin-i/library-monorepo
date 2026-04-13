@@ -1,4 +1,10 @@
+import type { InferRequestType } from 'hono/client';
 import { client } from '@/lib/rpc';
+
+// 获取枚举类型
+type renewalsQuery = InferRequestType<
+  typeof client.renewals.$get
+>['query']['status'];
 
 // 读者申请续借
 export const applyRenewalMutation = {
@@ -37,11 +43,11 @@ export const myRenewalsQuery = (userId: string) => ({
 });
 
 // 管理员获取续借申请列表
-export const listRenewalsQuery = (status?: string) => ({
+export const listRenewalsQuery = (status?: renewalsQuery) => ({
   queryKey: ['renewals', status],
   queryFn: async () => {
     const res = await client.renewals.$get({
-      query: status ? { status } : {},
+      query: { status },
     });
     const json = await res.json();
     if ('message' in json) {
