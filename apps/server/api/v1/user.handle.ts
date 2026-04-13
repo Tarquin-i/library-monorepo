@@ -45,7 +45,6 @@ const app = new Hono()
         const { id } = c.req.valid('param');
         const { role } = await c.req.valid('json');
 
-        // 使用 returning() 获取更新后的用户数据，不用再单独查询一次
         const result = await db
           .update(user)
           .set({ role })
