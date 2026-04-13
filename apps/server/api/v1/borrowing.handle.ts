@@ -4,7 +4,10 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { book } from '@demo/db/schema/book.entity';
 import { eq, sql, and, inArray } from 'drizzle-orm';
-import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
+import {
+  borrowingRecord,
+  borrowingStatusEnum,
+} from '@demo/db/schema/borrowing.entity';
 import { requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
@@ -119,7 +122,7 @@ const app = new Hono()
     zValidator(
       'query',
       z.object({
-        status: z.string().optional(),
+        status: z.enum(borrowingStatusEnum.enumValues).optional(),
         userId: z.string().optional(),
         ISBN: z.string().optional(),
       }),
@@ -128,15 +131,14 @@ const app = new Hono()
       try {
         const { status, userId, ISBN } = c.req.valid('query');
 
-        type BorrowingStatus = (typeof borrowingRecord.$inferSelect)['status']; // 从表 borrowingRecord 中推断 status 字段
-
+        // 通过状态、用户 id 和 ISBN 来筛选借阅图书
         const result = await db
           .select()
           .from(borrowingRecord)
           .where(
             and(
               status
-                ? eq(borrowingRecord.status, status as BorrowingStatus) // 如果是 undefined 就直接忽略，不会加进 sql 里面
+                ? eq(borrowingRecord.status, status) // 如果是 undefined 就直接忽略，不会加进 sql 里面
                 : undefined,
               userId ? eq(borrowingRecord.userId, userId) : undefined,
               ISBN ? eq(borrowingRecord.ISBN, ISBN) : undefined,

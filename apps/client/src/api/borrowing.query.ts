@@ -5,6 +5,10 @@ type ApplyBorrowingInput = InferRequestType<
   typeof client.borrowings.apply.$post
 >['json'];
 
+type BorrowingsQuery = InferRequestType<
+  typeof client.borrowings.$get
+>['query']['status'];
+
 // 发起借书申请
 export const applyBorrowingMutation = {
   mutationFn: async (data: ApplyBorrowingInput) => {
@@ -65,11 +69,11 @@ export const requestReturnMutation = {
 };
 
 // 管理员获取借阅申请列表
-export const listBorrowingsQuery = (status?: string) => ({
+export const listBorrowingsQuery = (status?: BorrowingsQuery) => ({
   queryKey: ['borrowings', status],
   queryFn: async () => {
     const res = await client.borrowings.$get({
-      query: status ? { status } : {},
+      query: { status },
     });
     const json = await res.json();
     if ('message' in json) {
@@ -123,7 +127,7 @@ export const rejectBorrowingMutation = {
   },
 };
 
-// 管理员办理归还
+// 管理员办理归还书籍
 export const returnBorrowingMutation = {
   mutationFn: async (id: number) => {
     const res = await client.borrowings[':id'].return.$patch({
@@ -131,7 +135,7 @@ export const returnBorrowingMutation = {
     });
     const json = await res.json();
     if ('message' in json) {
-      throw new Error(json.message || '归还失败');
+      throw new Error(json.message || '归还书籍失败');
     }
     return json.data;
   },
