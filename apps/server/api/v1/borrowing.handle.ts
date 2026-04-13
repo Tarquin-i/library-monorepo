@@ -32,6 +32,7 @@ const app = new Hono()
           return c.json({ message: '图书不存在' }, 404);
         }
 
+        // 检查图书库存数量、遗失状态和销毁状态
         if (
           bookRes[0].availableStock <= 0 ||
           bookRes[0].status === 'lost' ||
@@ -40,6 +41,7 @@ const app = new Hono()
           return c.json({ message: '可借图书库存不足' }, 400);
         }
 
+        // 检查借阅数量小于当前库存
         if (bookRes[0].availableStock < quantity) {
           return c.json(
             {
@@ -56,7 +58,7 @@ const app = new Hono()
           .where(
             and(
               eq(borrowingRecord.userId, userId),
-              //
+              // or
               inArray(borrowingRecord.status, [
                 'pending',
                 'approved',
@@ -108,7 +110,7 @@ const app = new Hono()
           })
           .returning();
 
-        return c.json({ data: result[0] }, 201);
+        return c.json({ data: result }, 201);
       } catch (error) {
         console.error('申请借阅失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);
@@ -204,6 +206,10 @@ const app = new Hono()
           return c.json({ message: '借阅记录不存在' }, 404);
         }
 
+        if (existing[0].status !== 'pending') {
+          return c.json({ message: '只能审批待审核的借阅申请' }, 400);
+        }
+
         const borrowDate = new Date();
         const dueDate = new Date();
         // 计算归还时间
@@ -220,6 +226,20 @@ const app = new Hono()
           .where(eq(borrowingRecord.id, id))
           .returning();
 
+        const bookData = await db
+          .select()
+          .from(book)
+          .where(eq(book.ISBN, existing[0].ISBN));
+
+        if (bookData[0].availableStock < existing[0].quantity) {
+          return c.json(
+            {
+              message: `图书库存不足，当前可借 ${bookData[0].availableStock} 本`,
+            },
+            400,
+          );
+        }
+
         await db
           .update(book)
           .set({
@@ -234,7 +254,7 @@ const app = new Hono()
       }
     },
   )
-  // 拒绝借阅申请
+  // 管理员拒绝借阅申请
   .patch(
     '/borrowings/:id/reject',
     requireRole('admin', 'librarian'),
@@ -336,8 +356,9 @@ const app = new Hono()
         const dueDate = existing[0].dueDate;
         let overdueDays = 0;
 
-        // 计算逾期天数
+        // 借阅时间存在且晚于归还时间，计算逾期天数
         if (dueDate && returnDate > dueDate) {
+          // getTime 单位是毫秒，逾期天数
           overdueDays = Math.ceil(
             (returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24),
           );
@@ -354,7 +375,7 @@ const app = new Hono()
           .update(book)
           .set({
             availableStock: sql`${book.availableStock} + 1`,
-            status: sql`CASE WHEN ${book.status} IN ('borrowed', 'lost') THEN 'available'::"book_status" ELSE ${book.status} END`,
+            status: 'available' as const,
           })
           .where(eq(book.ISBN, result[0].ISBN));
 
@@ -374,7 +395,7 @@ const app = new Hono()
       try {
         const { userId } = c.req.valid('query');
 
-        // 使用 Drizzle 的关联查询，自动包含 book 信息
+        // 关联查询，查询某个用户下的所有 book 信息
         const result = await db.query.borrowingRecord.findMany({
           where: eq(borrowingRecord.userId, userId),
           with: {
