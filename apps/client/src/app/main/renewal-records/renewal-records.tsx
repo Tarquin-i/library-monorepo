@@ -1,7 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
+import { myRenewalsQuery } from '@/api/renewal.query';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import {
   Table,
   TableBody,
@@ -10,8 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useQuery } from '@tanstack/react-query';
-import { myRenewalsQuery } from '@/api/renewal.query';
 import { authClient } from '@/lib/better-auth';
 
 export default function RenewalRecords() {
@@ -48,9 +48,7 @@ export default function RenewalRecords() {
         <div className='px-4 py-6 lg:px-8'>
           <div className='mb-6'>
             <h1 className='text-2xl font-bold'>续借记录</h1>
-            <p className='text-muted-foreground mt-1'>
-              查看你的续借申请状态
-            </p>
+            <p className='text-muted-foreground mt-1'>查看你的续借申请状态</p>
           </div>
 
           <div className='rounded-md border'>
@@ -67,7 +65,10 @@ export default function RenewalRecords() {
               <TableBody>
                 {renewals.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className='text-center text-muted-foreground py-8'>
+                    <TableCell
+                      colSpan={5}
+                      className='text-center text-muted-foreground py-8'
+                    >
                       暂无续借记录
                     </TableCell>
                   </TableRow>

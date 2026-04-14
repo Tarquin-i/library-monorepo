@@ -1,6 +1,6 @@
+import { createFileRoute } from '@tanstack/react-router';
 import Dashboard from '@/app/main/dashboard/dashboard';
 import { roleCheck } from '@/lib/route-guard';
-import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
