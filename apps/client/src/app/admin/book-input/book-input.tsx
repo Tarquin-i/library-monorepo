@@ -1,6 +1,7 @@
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { BookInputForm } from '@/app/admin/book-input/components/book-input-form';
+import { BatchImportDialog } from '@/app/admin/book-input/components/batch-import-dialog';
 import { BookListTable } from '@/app/admin/book-input/components/book-list-table';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
@@ -10,6 +11,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export default function BookInput() {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
 
   return (
     <SidebarProvider
@@ -36,6 +38,10 @@ export default function BookInput() {
               <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
               <Input placeholder='搜索书籍...' className='pl-9' />
             </div>
+            <Button variant='outline' onClick={() => setBatchOpen(true)}>
+              <Upload className='mr-2 h-4 w-4' />
+              批量录入
+            </Button>
             <Button onClick={() => setSheetOpen(true)}>
               <Plus className='mr-2 h-4 w-4' />
               录入书籍
@@ -49,6 +55,7 @@ export default function BookInput() {
       </SidebarInset>
 
       <BookInputForm open={sheetOpen} onOpenChange={setSheetOpen} />
+      <BatchImportDialog open={batchOpen} onOpenChange={setBatchOpen} />
     </SidebarProvider>
   );
 }
