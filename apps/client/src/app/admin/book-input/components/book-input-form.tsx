@@ -13,22 +13,9 @@ import {
 import { toast } from 'sonner';
 import { createBookMutation } from '@/api/book.query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { CreateBookInput } from '@/api/book.query';
 
-interface BookFormData {
-  ISBN: string;
-  bookName: string;
-  author: string;
-  publisher: string;
-  publishDate: string;
-  category: string;
-  price: number;
-  totalStock: number;
-  availableStock: number;
-  description?: string;
-  coverImage?: string;
-}
-
-const bookFormData: BookFormData = {
+const bookFormData = {
   ISBN: '',
   bookName: '',
   author: '',
@@ -49,7 +36,7 @@ export function BookInputForm({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [formData, setFormData] = useState<BookFormData>(bookFormData);
+  const [formData, setFormData] = useState<CreateBookInput>(bookFormData);
   const queryClient = useQueryClient();
   const createBook = useMutation({
     ...createBookMutation,
@@ -65,7 +52,9 @@ export function BookInputForm({
     createBook.mutate(formData, {
       onSuccess: (data) => {
         if (data.isUpdated) {
-          toast.success('已有藏品，已追加1本库存');
+          toast.success(
+            `已有藏品，已追加馆藏 ${formData.totalStock} 本，可借 ${formData.availableStock} 本`,
+          );
         } else {
           toast.success('书籍录入成功');
         }
@@ -194,6 +183,7 @@ export function BookInputForm({
                 name='availableStock'
                 type='number'
                 min={0}
+                max={formData.totalStock >= 0 ? formData.totalStock : undefined}
                 placeholder='1'
                 required
                 value={formData.availableStock}

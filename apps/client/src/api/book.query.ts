@@ -1,7 +1,9 @@
 import { client } from '@/lib/rpc';
 import type { InferRequestType } from 'hono/client';
 
-type CreateBookInput = InferRequestType<typeof client.books.$post>['json'];
+export type CreateBookInput = InferRequestType<
+  typeof client.books.$post
+>['json'];
 
 export const listBooksQuery = {
   queryKey: ['books'],
@@ -19,8 +21,12 @@ export const listBooksQuery = {
 export const createBookMutation = {
   mutationFn: async (bookData: CreateBookInput) => {
     const res = await client.books.$post({ json: bookData });
-    // console.log('res--------------', res);
-    // console.log('json--------------', json);
+    const json = await res.json();
+
+    if ('message' in json) {
+      throw new Error(json.message || '录入书籍失败');
+    }
+
     // 用状态码区分：201 新增，200 追加库存
     return { isUpdated: res.status === 200 };
   },

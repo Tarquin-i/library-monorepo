@@ -63,13 +63,17 @@ const app = new Hono()
           .from(book)
           .where(eq(book.ISBN, data.ISBN));
 
+        if (data.availableStock > data.totalStock) {
+          return c.json({ message: '可借数量不能大于馆藏数量' }, 400);
+        }
+
         if (existing.length > 0) {
-          // ISBN已存在，馆藏和可借+1
+          // ISBN已存在，按本次输入的数量追加馆藏和可借库存
           const result = await db
             .update(book)
             .set({
-              totalStock: sql`${book.totalStock} + 1`,
-              availableStock: sql`${book.availableStock} + 1`,
+              totalStock: sql`${book.totalStock} + ${data.totalStock}`,
+              availableStock: sql`${book.availableStock} + ${data.availableStock}`,
             })
             .where(eq(book.ISBN, data.ISBN))
             .returning();
@@ -101,7 +105,7 @@ const app = new Hono()
           .select()
           .from(book)
           .where(eq(book.ISBN, isbn));
-          
+
         if (existing.length === 0) {
           return c.json({ message: '书籍不存在' }, 404);
         }
