@@ -4,17 +4,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Link } from "@tanstack/react-router"
+} from '@/components/ui/sidebar';
+import { Link } from '@tanstack/react-router';
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: React.ReactNode
-  }[]
+    title: string;
+    url: string;
+    icon?: React.ReactNode;
+  }[];
 }) {
   return (
     <SidebarGroup>
@@ -22,7 +22,8 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <Link to={item.url}>
+              <Link to={item.url} preload={false}>
+                {/* 取消提前加载，默认是悬浮提前加载 */}
                 <SidebarMenuButton>
                   {item.icon}
                   <span>{item.title}</span>

@@ -26,7 +26,8 @@ export function NavAdmin({
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <Link to={item.url}>
+            <Link to={item.url} preload={false}>
+              {/* 取消提前加载，默认是悬浮提前加载 */}
               <SidebarMenuButton>
                 {item.icon}
                 <span>{item.name}</span>
