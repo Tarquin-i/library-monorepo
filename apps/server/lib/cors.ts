@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import type { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 export function initCors(app: Hono) {

@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { user, account } from '../schema/user.entity';
-import { hashPassword, generateRandomString } from 'better-auth/crypto';
+import { generateRandomString, hashPassword } from 'better-auth/crypto';
 import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { account, user } from '../schema/user.entity';
 
 const db = drizzle(process.env.DATABASE_URL!);
 

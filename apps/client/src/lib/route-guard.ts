@@ -1,6 +1,6 @@
 import { redirect } from '@tanstack/react-router';
-import { authClient } from './better-auth';
 import { toast } from 'sonner';
+import { authClient } from './better-auth';
 
 export type Role = 'admin' | 'librarian' | 'reader';
 

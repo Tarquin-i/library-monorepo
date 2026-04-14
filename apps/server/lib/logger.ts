@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Context, Next } from 'hono';
+import type { Context, Next } from 'hono';
 
 // 根据状态码返回不同颜色的终端颜色码
 const statusColor = (status: number) => {

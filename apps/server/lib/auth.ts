@@ -1,6 +1,6 @@
+import { db } from '@demo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db } from '@demo/db';
 
 export const auth = betterAuth({
   // 给 better-auth 添加自己的地址信任校验（注：cors 是浏览器层面的安全机制）

@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm';
 import {
+  integer,
+  pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
-  integer,
-  real,
-  pgEnum,
 } from 'drizzle-orm/pg-core';
 import { borrowingRecord } from './borrowing.entity';
 

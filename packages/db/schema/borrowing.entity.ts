@@ -1,14 +1,14 @@
+import { relations } from 'drizzle-orm';
 import {
+  integer,
   pgEnum,
   pgTable,
+  serial,
   text,
   timestamp,
-  serial,
-  integer,
 } from 'drizzle-orm/pg-core';
-import { user } from './user.entity';
 import { book } from './book.entity';
-import { relations } from 'drizzle-orm';
+import { user } from './user.entity';
 
 export const borrowingStatusEnum = pgEnum('borrowing_status', [
   'pending',

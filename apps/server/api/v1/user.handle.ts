@@ -1,8 +1,8 @@
-import { Hono } from 'hono';
 import { db } from '@demo/db';
 import { user } from '@demo/db/schema/user.entity';
-import { eq } from 'drizzle-orm';
 import { zValidator } from '@hono/zod-validator';
+import { eq } from 'drizzle-orm';
+import { Hono } from 'hono';
 import z from 'zod';
 import { requireRole } from '../../lib/permission';
 

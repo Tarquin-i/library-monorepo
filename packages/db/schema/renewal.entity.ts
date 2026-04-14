@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   integer,
   pgEnum,
@@ -8,7 +9,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { borrowingRecord } from './borrowing.entity';
 import { user } from './user.entity';
-import { relations } from 'drizzle-orm';
 
 export const renewalStatusEnum = pgEnum('renewal_status', [
   'pending',

@@ -2,18 +2,15 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public data?: unknown
+    public data?: unknown,
   ) {
-    super(message)
-    this.name = 'ApiError'
+    super(message);
+    this.name = 'ApiError';
   }
 }
 
-async function request<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> {
-  const url = `/api${endpoint}`
+async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const url = `/api${endpoint}`;
 
   const response = await fetch(url, {
     ...options,
@@ -21,18 +18,18 @@ async function request<T>(
       'Content-Type': 'application/json',
       ...options?.headers,
     },
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null)
+    const errorData = await response.json().catch(() => null);
     throw new ApiError(
       response.status,
       errorData?.message || response.statusText,
-      errorData
-    )
+      errorData,
+    );
   }
 
-  return response.json()
+  return response.json();
 }
 
 export const apiClient = {
@@ -50,6 +47,5 @@ export const apiClient = {
       body: JSON.stringify(data),
     }),
 
-  delete: <T>(endpoint: string) =>
-    request<T>(endpoint, { method: 'DELETE' }),
-}
+  delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
+};
