@@ -1,24 +1,14 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import type { RenewalsQuery } from '@/api/renewal.query';
+import {
+  approveRenewalMutation,
+  listRenewalsQuery,
+  rejectRenewalMutation,
+} from '@/api/renewal.query';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,15 +19,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
-  listRenewalsQuery,
-  approveRenewalMutation,
-  rejectRenewalMutation,
-} from '@/api/renewal.query';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { authClient } from '@/lib/better-auth';
-import { toast } from 'sonner';
-import type { RenewalsQuery } from '@/api/renewal.query';
 
 export default function RenewalManagement() {
   const { data: session } = authClient.useSession();

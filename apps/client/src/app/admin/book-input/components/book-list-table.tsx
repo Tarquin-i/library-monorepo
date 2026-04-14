@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { listBooksQuery } from '@/api/book.query';
 import {
   Table,
   TableBody,
@@ -6,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useQuery } from '@tanstack/react-query';
-import { listBooksQuery } from '@/api/book.query';
 
 export function BookListTable() {
   const { data: books = [] } = useQuery(listBooksQuery);

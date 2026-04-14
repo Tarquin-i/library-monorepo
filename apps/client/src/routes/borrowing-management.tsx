@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { roleCheck } from '@/lib/route-guard';
 import BorrowingManagement from '@/app/admin/borrowing-management/borrowing-management';
+import { roleCheck } from '@/lib/route-guard';
 
 export const Route = createFileRoute('/borrowing-management')({
   beforeLoad: async () => {

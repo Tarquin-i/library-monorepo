@@ -1,5 +1,5 @@
-import { client } from '@/lib/rpc';
 import type { InferRequestType } from 'hono/client';
+import { client } from '@/lib/rpc';
 
 type ApplyBorrowingInput = InferRequestType<
   typeof client.borrowings.apply.$post

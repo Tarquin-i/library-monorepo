@@ -1,6 +1,6 @@
+import { createFileRoute } from '@tanstack/react-router';
 import AccessControl from '@/app/admin/access-control/access-control';
 import { roleCheck } from '@/lib/route-guard';
-import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/access-control')({
   beforeLoad: async () => {

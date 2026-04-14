@@ -1,5 +1,5 @@
-import { client } from '@/lib/rpc';
 import type { InferRequestType } from 'hono/client';
+import { client } from '@/lib/rpc';
 
 export type CreateBookInput = InferRequestType<
   typeof client.books.$post
