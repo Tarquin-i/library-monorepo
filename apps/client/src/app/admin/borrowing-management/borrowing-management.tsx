@@ -38,13 +38,14 @@ import {
 } from '@/api/borrowing.query';
 import { authClient } from '@/lib/better-auth';
 import { toast } from 'sonner';
+import type { BorrowingsQuery } from '@/api/borrowing.query';
 
 export default function BorrowingManagement() {
   const { data: session } = authClient.useSession();
   const reviewerId = session?.user?.id ?? ''; // 当前用户 id
   const queryClient = useQueryClient();
 
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [status, setStatus] = useState<BorrowingsQuery>(undefined);
   const [rejectDialog, setRejectDialog] = useState<{
     // 拒绝弹窗以及收集记录
     open: boolean;
@@ -55,8 +56,12 @@ export default function BorrowingManagement() {
   });
   const [rejectReason, setRejectReason] = useState('');
 
-  const status = statusFilter === 'all' ? undefined : statusFilter; // 传入 undefined 时显示全部
   const { data: borrowings = [] } = useQuery(listBorrowingsQuery(status)); // 按状态查询
+
+  // undefined 映射成 'all' 筛选全部
+  function handleStatusChange(value: string) {
+    setStatus(value === 'all' ? undefined : (value as BorrowingsQuery));
+  }
 
   function getStatusBadge(s: string) {
     switch (s) {
@@ -140,7 +145,8 @@ export default function BorrowingManagement() {
           </div>
 
           <div className='mb-4'>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            {/* 上传 undefined 的话直接转换为 'all'（undefined 为筛选全部） */}
+            <Select value={status ?? 'all'} onValueChange={handleStatusChange}>
               <SelectTrigger className='w-40'>
                 <SelectValue placeholder='状态筛选' />
               </SelectTrigger>
@@ -257,9 +263,7 @@ export default function BorrowingManagement() {
           />
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRejectConfirm}
-            >
+            <AlertDialogAction onClick={handleRejectConfirm}>
               确认拒绝
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -37,13 +37,14 @@ import {
 } from '@/api/renewal.query';
 import { authClient } from '@/lib/better-auth';
 import { toast } from 'sonner';
+import type { RenewalsQuery } from '@/api/renewal.query';
 
 export default function RenewalManagement() {
   const { data: session } = authClient.useSession();
   const reviewerId = session?.user?.id ?? '';
   const queryClient = useQueryClient();
 
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [status, setStatus] = useState<RenewalsQuery>(undefined);
   const [rejectDialog, setRejectDialog] = useState<{
     open: boolean;
     id: number | null;
@@ -53,8 +54,12 @@ export default function RenewalManagement() {
   });
   const [rejectReason, setRejectReason] = useState('');
 
-  const status = statusFilter === 'all' ? undefined : statusFilter;
   const { data: renewals = [] } = useQuery(listRenewalsQuery(status));
+
+  // undefined 映射成 'all' 筛选全部
+  function handleStatusChange(value: string) {
+    setStatus(value === 'all' ? undefined : (value as RenewalsQuery));
+  }
 
   function getStatusBadge(s: string) {
     switch (s) {
@@ -117,7 +122,8 @@ export default function RenewalManagement() {
           </div>
 
           <div className='mb-4'>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            {/* 上传 undefined 的话直接转换为 'all'（undefined 为筛选全部） */}
+            <Select value={status ?? 'all'} onValueChange={handleStatusChange}>
               <SelectTrigger className='w-40'>
                 <SelectValue placeholder='状态筛选' />
               </SelectTrigger>

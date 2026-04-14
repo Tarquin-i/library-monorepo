@@ -2,7 +2,7 @@ import type { InferRequestType } from 'hono/client';
 import { client } from '@/lib/rpc';
 
 // 获取枚举类型
-type renewalsQuery = InferRequestType<
+export type RenewalsQuery = InferRequestType<
   typeof client.renewals.$get
 >['query']['status'];
 
@@ -43,7 +43,7 @@ export const myRenewalsQuery = (userId: string) => ({
 });
 
 // 管理员获取续借申请列表
-export const listRenewalsQuery = (status?: renewalsQuery) => ({
+export const listRenewalsQuery = (status?: RenewalsQuery) => ({
   queryKey: ['renewals', status],
   queryFn: async () => {
     const res = await client.renewals.$get({

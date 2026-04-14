@@ -5,7 +5,7 @@ type ApplyBorrowingInput = InferRequestType<
   typeof client.borrowings.apply.$post
 >['json'];
 
-type BorrowingsQuery = InferRequestType<
+export type BorrowingsQuery = InferRequestType<
   typeof client.borrowings.$get
 >['query']['status'];
 
