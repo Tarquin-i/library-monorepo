@@ -31,3 +31,40 @@ export const createBookMutation = {
     return { isUpdated: res.status === 200 };
   },
 };
+
+export type UpdateBookInput = InferRequestType<
+  (typeof client.books)[':isbn']['$patch']
+>['json'];
+
+export const updateBookMutation = {
+  mutationFn: async ({
+    isbn,
+    data,
+  }: {
+    isbn: string;
+    data: UpdateBookInput;
+  }) => {
+    const res = await client.books[':isbn'].$patch({
+      param: { isbn },
+      json: data,
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '修改书籍失败');
+    }
+    return json.data;
+  },
+};
+
+export const deleteBookMutation = {
+  mutationFn: async (isbn: string) => {
+    const res = await client.books[':isbn'].$delete({
+      param: { isbn },
+    });
+    const json = await res.json();
+    if ('message' in json) {
+      throw new Error(json.message || '删除书籍失败');
+    }
+    return json;
+  },
+};
