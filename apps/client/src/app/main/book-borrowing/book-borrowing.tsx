@@ -36,6 +36,7 @@ export default function BookBorrowing() {
   const { data: books = [] } = useQuery(listBooksQuery);
   const queryClient = useQueryClient();
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedISBN, setSelectedISBN] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -75,6 +76,16 @@ export default function BookBorrowing() {
     });
   };
 
+  // 搜索过滤
+  const filteredBooks = books.filter((book) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      book.bookName.toLowerCase().includes(term) ||
+      book.ISBN.toLowerCase().includes(term) ||
+      book.author.toLowerCase().includes(term)
+    );
+  });
+
   // 判断书籍是否可借
   const isBookAvailable = (book: {
     availableStock: number;
@@ -106,7 +117,12 @@ export default function BookBorrowing() {
           <div className='mb-4'>
             <div className='relative max-w-sm'>
               <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-              <Input placeholder='搜索书籍...' className='pl-9' />
+              <Input
+                placeholder='搜索书籍...'
+                className='pl-9'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
           </div>
 
@@ -122,7 +138,7 @@ export default function BookBorrowing() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {books.map((book) => (
+                {filteredBooks.map((book) => (
                   <TableRow key={book.ISBN}>
                     <TableCell className='font-medium'>
                       {book.bookName}
