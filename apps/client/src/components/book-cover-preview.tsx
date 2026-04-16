@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   HoverCard,
   HoverCardContent,
@@ -60,6 +67,12 @@ export function BookCoverPreview({
       </HoverCard>
 
       <DialogContent className='max-w-md overflow-hidden p-0 sm:max-w-lg'>
+        <DialogHeader className='border-b px-4 py-3 pr-12'>
+          <DialogTitle>{`《${title}》封面预览`}</DialogTitle>
+          <DialogDescription>
+            查看完整封面图片。
+          </DialogDescription>
+        </DialogHeader>
         <div className='bg-muted/30 p-4 pr-12'>
           <img
             src={imageSrc}
