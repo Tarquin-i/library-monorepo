@@ -13,7 +13,8 @@
     "includes": [
       "**",
       "!bun.lock",
-      "!**/styles.css"
+      "!**/styles.css",
+      "!**/routeTree.gen.ts"
     ]
   },
   "formatter": {
@@ -60,7 +61,8 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "useComponentExportOnlyModules": "off"
       }
     }
   },
