@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Pencil, Trash2 } from 'lucide-react';
-import { listBooksQuery } from '@/api/book.query';
+import { type Book, listBooksQuery } from '@/api/book.query';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -10,9 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-// 从查询返回类型推断单本书籍类型
-export type Book = Awaited<ReturnType<typeof listBooksQuery.queryFn>>[number];
 
 export function BookListTable({
   searchTerm,
@@ -25,6 +22,7 @@ export function BookListTable({
 }) {
   const { data: books = [] } = useQuery(listBooksQuery);
 
+  // 筛选过滤
   const filteredBooks = books.filter((book) => {
     const term = searchTerm.toLowerCase();
     return (

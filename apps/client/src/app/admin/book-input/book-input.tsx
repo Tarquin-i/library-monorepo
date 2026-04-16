@@ -1,13 +1,11 @@
 import { Plus, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
+import type { Book } from '@/api/book.query';
 import { BatchImportDialog } from '@/app/admin/book-input/components/batch-import-dialog';
 import { BookDeleteDialog } from '@/app/admin/book-input/components/book-delete-dialog';
 import { BookEditDrawer } from '@/app/admin/book-input/components/book-edit-drawer';
 import { BookInputForm } from '@/app/admin/book-input/components/book-input-form';
-import {
-  type Book,
-  BookListTable,
-} from '@/app/admin/book-input/components/book-list-table';
+import { BookListTable } from '@/app/admin/book-input/components/book-list-table';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
@@ -84,16 +82,20 @@ export default function BookInput() {
 
       <BookInputForm open={sheetOpen} onOpenChange={setSheetOpen} />
       <BatchImportDialog open={batchOpen} onOpenChange={setBatchOpen} />
-      <BookEditDrawer
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        book={selectedBook}
-      />
-      <BookDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        book={selectedBook}
-      />
+      {selectedBook && (
+        <BookEditDrawer
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          book={selectedBook}
+        />
+      )}
+      {selectedBook && (
+        <BookDeleteDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          book={selectedBook}
+        />
+      )}
     </SidebarProvider>
   );
 }

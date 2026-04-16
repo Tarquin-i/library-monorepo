@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { deleteBookMutation } from '@/api/book.query';
-import type { Book } from './book-list-table';
+import { type Book, deleteBookMutation } from '@/api/book.query';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +19,7 @@ export function BookDeleteDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  book: Book | null;
+  book: Book;
 }) {
   const queryClient = useQueryClient();
 
@@ -42,7 +41,7 @@ export function BookDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除《{book?.bookName}》（ISBN: {book?.ISBN}
+            确定要删除《{book.bookName}》（ISBN: {book.ISBN}
             ）吗？此操作不可撤销。
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -1,4 +1,4 @@
-import type { InferRequestType } from 'hono/client';
+import type { InferRequestType, InferResponseType } from 'hono/client';
 import { client } from '@/lib/rpc';
 
 export type CreateBookInput = InferRequestType<
@@ -17,7 +17,13 @@ export const listBooksQuery = {
   },
 };
 
-// mutation 不能自动推到可以通过 InferRequestType 提取端点返回类型
+// 后端传出的类型
+export type Book = InferResponseType<
+  typeof client.books.$get,
+  200
+>['data'][number];
+
+// mutation 的入参可以通过 InferRequestType 提取请求体类型
 export const createBookMutation = {
   mutationFn: async (bookData: CreateBookInput) => {
     const res = await client.books.$post({ json: bookData });
