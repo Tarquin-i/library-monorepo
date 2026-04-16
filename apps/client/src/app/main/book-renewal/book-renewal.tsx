@@ -31,7 +31,12 @@ export default function BookRenewal() {
     ...applyRenewalMutation,
     onSuccess: () => {
       toast.success('续借申请已提交，等待管理员审批');
+      // 刷新借阅记录缓存
       queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
+      // 刷新当前用户的续借记录
+      queryClient.invalidateQueries({ queryKey: ['myRenewals', userId] });
+      // 刷新管理员侧续借管理列表
+      queryClient.invalidateQueries({ queryKey: ['renewals'] });
     },
     onError: (error: Error) => {
       toast.error(error.message || '续借申请失败');

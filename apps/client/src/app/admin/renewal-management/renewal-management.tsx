@@ -78,7 +78,12 @@ export default function RenewalManagement() {
     ...approveRenewalMutation,
     onSuccess: () => {
       toast.success('续借申请已批准');
+      // 刷新续借管理列表
       queryClient.invalidateQueries({ queryKey: ['renewals'] });
+      // 刷新用户自己的续借记录
+      queryClient.invalidateQueries({ queryKey: ['myRenewals'] });
+      // 刷新借阅记录缓存
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings'] });
     },
     onError: (error: Error) => toast.error(error.message || '批准失败'),
   });
@@ -89,7 +94,12 @@ export default function RenewalManagement() {
       toast.success('续借申请已拒绝');
       setRejectDialog({ open: false, id: null });
       setRejectReason('');
+      // 刷新续借管理列表
       queryClient.invalidateQueries({ queryKey: ['renewals'] });
+      // 刷新用户自己的续借记录
+      queryClient.invalidateQueries({ queryKey: ['myRenewals'] });
+      // 刷新借阅记录缓存
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings'] });
     },
     onError: (error: Error) => toast.error(error.message || '拒绝失败'),
   });

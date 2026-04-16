@@ -46,8 +46,16 @@ export default function BookBorrowing() {
     ...applyBorrowingMutation,
     onSuccess: () => {
       toast.success('借阅申请提交成功，等待管理员审批');
-      // 刷新书籍列表，更新可借数量
+      // 刷新书籍列表
       queryClient.invalidateQueries({ queryKey: ['books'] });
+      // 刷新管理端借阅列表
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+      if (session?.user?.id) {
+        // 刷新当前用户的借阅记录
+        queryClient.invalidateQueries({
+          queryKey: ['myBorrowings', session.user.id],
+        });
+      }
       setDialogOpen(false);
       setSelectedISBN(null);
     },
@@ -67,7 +75,6 @@ export default function BookBorrowing() {
   // 确认借阅，调用借阅申请接口
   const handleConfirmBorrow = () => {
     if (!selectedISBN || !session?.user?.id) return;
-
     borrowMutation.mutate({
       ISBN: selectedISBN,
       userId: session.user.id,

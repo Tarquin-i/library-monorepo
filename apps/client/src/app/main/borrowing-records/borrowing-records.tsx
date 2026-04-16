@@ -5,7 +5,6 @@ import {
   myBorrowingRecordsQuery,
   requestReturnMutation,
 } from '@/api/borrowing.query';
-import { applyRenewalMutation } from '@/api/renewal.query';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +50,10 @@ export default function BorrowingRecords() {
     ...cancelBorrowingMutation,
     onSuccess: () => {
       toast.success('借阅申请已取消');
+      // 刷新当前用户的借阅记录
       queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
+      // 刷新管理端借阅列表
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
     },
     onError: (error: Error) => toast.error(error.message || '取消失败'),
   });
@@ -60,18 +62,12 @@ export default function BorrowingRecords() {
     ...requestReturnMutation,
     onSuccess: () => {
       toast.success('归还申请已提交，等待管理员确认');
+      // 刷新当前用户的借阅记录
       queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
+      // 刷新管理端借阅列表
+      queryClient.invalidateQueries({ queryKey: ['borrowings'] });
     },
     onError: (error: Error) => toast.error(error.message || '申请归还失败'),
-  });
-
-  const renewalMutation = useMutation({
-    ...applyRenewalMutation,
-    onSuccess: () => {
-      toast.success('续借申请已提交，等待管理员审批');
-      queryClient.invalidateQueries({ queryKey: ['myBorrowings', userId] });
-    },
-    onError: (error: Error) => toast.error(error.message || '续借申请失败'),
   });
 
   return (
@@ -139,30 +135,14 @@ export default function BorrowingRecords() {
                           </Button>
                         )}
                         {record.status === 'approved' && (
-                          <>
-                            <Button
-                              size='sm'
-                              variant='outline'
-                              onClick={() => requestReturnMut.mutate(record.id)}
-                              disabled={requestReturnMut.isPending}
-                            >
-                              申请归还
-                            </Button>
-                            {record.renewalCount === 0 && (
-                              <Button
-                                size='sm'
-                                variant='outline'
-                                onClick={() =>
-                                  renewalMutation.mutate({
-                                    borrowingId: record.id,
-                                    userId,
-                                  })
-                                }
-                              >
-                                申请续借
-                              </Button>
-                            )}
-                          </>
+                          <Button
+                            size='sm'
+                            variant='outline'
+                            onClick={() => requestReturnMut.mutate(record.id)}
+                            disabled={requestReturnMut.isPending}
+                          >
+                            申请归还
+                          </Button>
                         )}
                       </div>
                     </TableCell>
