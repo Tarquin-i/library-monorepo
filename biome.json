@@ -53,7 +53,7 @@
   },
   "linter": {
     "domains": {
-      "next": "all",
+      "next": "none",
       "react": "all"
     },
     "enabled": true,

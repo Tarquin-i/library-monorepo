@@ -2,7 +2,10 @@
   "name": "@tarquin/server",
   "type": "module",
   "scripts": {
-    "dev": "bun --port 3100 ./index.ts"
+    "dev": "bun --port 3100 ./index.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "biome check .",
+    "check-types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@demo/db": "*",
