@@ -86,7 +86,12 @@ export default function BorrowingManagement() {
     ...approveBorrowingMutation,
     onSuccess: () => {
       toast.success('借阅申请已批准');
+      // 刷新借阅管理列表
       queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+      // 刷新书籍列表
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      // 刷新读者借阅记录
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings'] });
     },
     onError: (error: Error) => {
       toast.error(error.message || '审批失败');
@@ -99,7 +104,10 @@ export default function BorrowingManagement() {
       toast.success('借阅申请已拒绝');
       setRejectDialog({ open: false, id: null });
       setRejectReason('');
+      // 刷新借阅管理列表
       queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+      // 刷新读者借阅记录
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings'] });
     },
     onError: (error: Error) => {
       toast.error(error.message || '拒绝失败');
@@ -110,7 +118,12 @@ export default function BorrowingManagement() {
     ...returnBorrowingMutation,
     onSuccess: () => {
       toast.success('归还办理成功');
+      // 刷新借阅管理列表
       queryClient.invalidateQueries({ queryKey: ['borrowings'] });
+      // 刷新书籍列表
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      // 刷新读者借阅记录
+      queryClient.invalidateQueries({ queryKey: ['myBorrowings'] });
     },
     onError: (error: Error) => {
       toast.error(error.message || '归还失败');
@@ -118,7 +131,8 @@ export default function BorrowingManagement() {
   });
 
   function handleRejectConfirm() {
-    if (!rejectDialog.id || !rejectReason.trim()) return;
+    if (!rejectDialog.id || !rejectReason.trim())
+      return toast.error('请填写拒绝原因');
     rejectMutation.mutate({
       id: rejectDialog.id,
       reviewerId,
@@ -166,7 +180,7 @@ export default function BorrowingManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>用户ID</TableHead>
+                  <TableHead>用户名</TableHead>
                   <TableHead>ISBN</TableHead>
                   <TableHead>数量</TableHead>
                   <TableHead>借阅天数</TableHead>
@@ -180,8 +194,8 @@ export default function BorrowingManagement() {
                 {borrowings.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>{record.id}</TableCell>
-                    <TableCell className='font-mono text-xs max-w-28 truncate'>
-                      {record.userId}
+                    <TableCell className='max-w-28 truncate'>
+                      {record.user.name}
                     </TableCell>
                     <TableCell className='font-mono text-sm'>
                       {record.ISBN}

@@ -219,9 +219,7 @@ export function BookInputForm({
             />
           </div>
           <SheetFooter className='pt-4'>
-            <Button type='submit' disabled={createBook.isPending}>
-              {createBook.isPending ? '提交中...' : '确认录入'}
-            </Button>
+            <Button type='submit'>确认录入</Button>
           </SheetFooter>
         </form>
       </SheetContent>

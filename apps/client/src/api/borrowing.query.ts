@@ -79,6 +79,7 @@ export const listBorrowingsQuery = (status?: BorrowingsQuery) => ({
     if ('message' in json) {
       throw new Error(json.message || '获取借阅列表失败');
     }
+    console.log('12346789', json.data);
     return json.data;
   },
 });

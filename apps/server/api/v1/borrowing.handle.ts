@@ -134,18 +134,18 @@ const app = new Hono()
         const { status, userId, ISBN } = c.req.valid('query');
 
         // 通过状态、用户 id 和 ISBN 来筛选借阅图书
-        const result = await db
-          .select()
-          .from(borrowingRecord)
-          .where(
-            and(
-              status
-                ? eq(borrowingRecord.status, status) // 如果是 undefined 就直接忽略，不会加进 sql 里面
-                : undefined,
-              userId ? eq(borrowingRecord.userId, userId) : undefined,
-              ISBN ? eq(borrowingRecord.ISBN, ISBN) : undefined,
-            ),
-          );
+        const result = await db.query.borrowingRecord.findMany({
+          where: and(
+            status
+              ? eq(borrowingRecord.status, status) // 如果是 undefined 就直接忽略，不会加进 sql 里面
+              : undefined,
+            userId ? eq(borrowingRecord.userId, userId) : undefined,
+            ISBN ? eq(borrowingRecord.ISBN, ISBN) : undefined,
+          ),
+          with: {
+            user: true,
+          },
+        });
         return c.json({ data: result });
       } catch (error) {
         console.error('获取申请列表失败:', error);
