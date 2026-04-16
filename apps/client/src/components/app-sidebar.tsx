@@ -1,6 +1,16 @@
-import * as React from 'react';
-
 import { Link } from '@tanstack/react-router';
+import {
+  BookOpenCheckIcon,
+  ClipboardListIcon,
+  CommandIcon,
+  DatabaseIcon,
+  FileChartColumnIcon,
+  HistoryIcon,
+  LayoutDashboardIcon,
+  ListIcon,
+  RefreshCwIcon,
+} from 'lucide-react';
+import type * as React from 'react';
 import { NavAdmin } from '@/components/nav-admin';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -13,18 +23,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {
-  LayoutDashboardIcon,
-  ListIcon,
-  BookOpenCheckIcon,
-  DatabaseIcon,
-  FileChartColumnIcon,
-  CommandIcon,
-  ClipboardListIcon,
-  RefreshCwIcon,
-  HistoryIcon,
-} from 'lucide-react';
 import { authClient } from '@/lib/better-auth';
+import type { Role } from '@/lib/route-guard';
+
 const navData = {
   navMain: [
     {
@@ -57,7 +58,7 @@ const navData = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data } = authClient.useSession();
-  const role = data?.user?.role;
+  const role = (data?.user as { role?: Role } | undefined)?.role;
   const isAdmin = role === 'admin';
   const isStaff = isAdmin || role === 'librarian';
 
