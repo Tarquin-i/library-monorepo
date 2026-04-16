@@ -1,4 +1,6 @@
-import { cn } from '@/lib/utils';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,9 +17,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { authClient } from '@/lib/better-auth';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
-import { useNavigate, Link } from '@tanstack/react-router';
+import { cn } from '@/lib/utils';
 
 export function LoginForm({
   className,

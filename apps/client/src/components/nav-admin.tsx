@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from '@tanstack/react-router';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -7,7 +8,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Link } from '@tanstack/react-router';
 
 export function NavAdmin({
   label = 'Admin',

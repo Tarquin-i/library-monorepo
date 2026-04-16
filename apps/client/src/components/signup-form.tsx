@@ -1,4 +1,6 @@
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,9 +16,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Link, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/better-auth';
-import { toast } from 'sonner';
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const nameId = useId();

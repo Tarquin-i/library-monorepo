@@ -1,3 +1,10 @@
+import { useNavigate } from '@tanstack/react-router';
+import {
+  CircleUserRoundIcon,
+  EllipsisVerticalIcon,
+  LogOutIcon,
+  Settings2Icon,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -14,14 +21,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  EllipsisVerticalIcon,
-  CircleUserRoundIcon,
-  LogOutIcon,
-  Settings2Icon,
-} from 'lucide-react';
 import { authClient } from '@/lib/better-auth';
-import { useNavigate } from '@tanstack/react-router';
 
 export function NavUser() {
   const { isMobile } = useSidebar();
