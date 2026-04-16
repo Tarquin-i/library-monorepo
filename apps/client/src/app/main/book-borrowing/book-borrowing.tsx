@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { listBooksQuery } from '@/api/book.query';
 import { applyBorrowingMutation } from '@/api/borrowing.query';
 import { AppSidebar } from '@/components/app-sidebar';
+import { BookCoverPreview } from '@/components/book-cover-preview';
 import { SiteHeader } from '@/components/site-header';
 import {
   AlertDialog,
@@ -142,6 +143,7 @@ export default function BookBorrowing() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>封面</TableHead>
                   <TableHead>书名</TableHead>
                   <TableHead>作者</TableHead>
                   <TableHead>ISBN</TableHead>
@@ -153,7 +155,7 @@ export default function BookBorrowing() {
                 {filteredBooks.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className='text-center text-muted-foreground py-8'
                     >
                       暂无图书记录
@@ -162,6 +164,13 @@ export default function BookBorrowing() {
                 )}
                 {filteredBooks.map((book) => (
                   <TableRow key={book.ISBN}>
+                    <TableCell className='w-16'>
+                      {/* 自定义图书封面悬浮组件 */}
+                      <BookCoverPreview
+                        src={book.coverImage}
+                        title={book.bookName}
+                      />
+                    </TableCell>
                     <TableCell className='font-medium'>
                       {book.bookName}
                     </TableCell>
