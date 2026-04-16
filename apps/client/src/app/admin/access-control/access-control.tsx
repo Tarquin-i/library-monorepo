@@ -71,6 +71,16 @@ export default function AccessControl() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {users.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={3}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无用户信息
+                    </TableCell>
+                  </TableRow>
+                )}
                 {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className='font-medium'>{user.name}</TableCell>

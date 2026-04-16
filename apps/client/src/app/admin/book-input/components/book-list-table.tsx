@@ -67,6 +67,16 @@ export function BookListTable({
         </TableRow>
       </TableHeader>
       <TableBody>
+        {filteredBooks.length === 0 && (
+          <TableRow>
+            <TableCell
+              colSpan={10}
+              className='text-center text-muted-foreground py-8'
+            >
+              暂无图书记录
+            </TableCell>
+          </TableRow>
+        )}
         {filteredBooks.map((b) => (
           <TableRow key={b.ISBN}>
             <TableCell className='font-mono text-sm'>{b.ISBN}</TableCell>
@@ -80,18 +90,10 @@ export function BookListTable({
             <TableCell>{getBookStatusText(b.status)}</TableCell>
             <TableCell className='text-right'>
               <div className='flex justify-end gap-2'>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  onClick={() => onEdit(b)}
-                >
+                <Button variant='ghost' size='icon' onClick={() => onEdit(b)}>
                   <Pencil className='h-4 w-4' />
                 </Button>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  onClick={() => onDelete(b)}
-                >
+                <Button variant='ghost' size='icon' onClick={() => onDelete(b)}>
                   <Trash2 className='h-4 w-4 text-destructive' />
                 </Button>
               </div>

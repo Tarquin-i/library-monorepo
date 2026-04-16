@@ -104,6 +104,16 @@ export default function BorrowingRecords() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {records.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无借阅记录
+                    </TableCell>
+                  </TableRow>
+                )}
                 {records.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className='font-medium'>

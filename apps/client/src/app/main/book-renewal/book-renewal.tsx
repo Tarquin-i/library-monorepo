@@ -76,6 +76,16 @@ export default function BookRenewal() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {activeRecords.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无续借记录
+                    </TableCell>
+                  </TableRow>
+                )}
                 {activeRecords.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className='font-medium'>

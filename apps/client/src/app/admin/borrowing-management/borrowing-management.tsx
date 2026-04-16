@@ -191,6 +191,16 @@ export default function BorrowingManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {borrowings.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无借阅记录
+                    </TableCell>
+                  </TableRow>
+                )}
                 {borrowings.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>{record.id}</TableCell>

@@ -159,6 +159,16 @@ export default function RenewalManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {renewals.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无续借记录
+                    </TableCell>
+                  </TableRow>
+                )}
                 {renewals.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>{record.id}</TableCell>

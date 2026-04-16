@@ -145,6 +145,16 @@ export default function BookBorrowing() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {filteredBooks.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className='text-center text-muted-foreground py-8'
+                    >
+                      暂无图书记录
+                    </TableCell>
+                  </TableRow>
+                )}
                 {filteredBooks.map((book) => (
                   <TableRow key={book.ISBN}>
                     <TableCell className='font-medium'>
