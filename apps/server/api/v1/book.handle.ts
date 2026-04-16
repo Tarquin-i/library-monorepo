@@ -156,7 +156,7 @@ const app = new Hono()
         // 删除书籍
         await db.delete(book).where(eq(book.ISBN, isbn));
 
-        return c.json({ message: '删除成功' });
+        return c.json({ data: { success: true } });
       } catch (error) {
         console.error('删除书籍失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);

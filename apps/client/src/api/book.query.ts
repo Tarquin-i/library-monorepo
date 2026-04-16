@@ -65,6 +65,6 @@ export const deleteBookMutation = {
     if ('message' in json) {
       throw new Error(json.message || '删除书籍失败');
     }
-    return json;
+    return json.data;
   },
 };
