@@ -13,11 +13,17 @@ import { Input } from '@/components/ui/input';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export default function BookInput() {
+  // 搜索关键词
   const [searchTerm, setSearchTerm] = useState('');
+  // 新增书籍抽屉开关
   const [sheetOpen, setSheetOpen] = useState(false);
+  // 批量录入弹窗开关
   const [batchOpen, setBatchOpen] = useState(false);
+  // 编辑抽屉开关
   const [editOpen, setEditOpen] = useState(false);
+  // 删除弹窗开关
   const [deleteOpen, setDeleteOpen] = useState(false);
+  // 当前选中的书籍
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   function handleEdit(book: Book) {

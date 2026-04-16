@@ -36,10 +36,15 @@ export default function BookBorrowing() {
   const { data: books = [] } = useQuery(listBooksQuery);
   const queryClient = useQueryClient();
 
+  // 搜索关键词
   const [searchTerm, setSearchTerm] = useState('');
+  // 借阅弹窗开关
   const [dialogOpen, setDialogOpen] = useState(false);
+  // 当前选中的书籍 ISBN
   const [selectedISBN, setSelectedISBN] = useState<string | null>(null);
+  // 借阅数量
   const [quantity, setQuantity] = useState(1);
+  // 借阅天数
   const [borrowDays, setBorrowDays] = useState(30);
 
   const borrowMutation = useMutation({
