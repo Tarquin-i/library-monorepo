@@ -20,7 +20,7 @@ const app = new Hono()
       try {
         const { userId } = c.req.valid('query');
 
-        // 通过借阅记录关联查出该用户的所有续借申请
+        // 先查出当前用户关联的借阅记录，再回查续借记录和图书信息
         const borrowings = await db
           .select()
           .from(borrowingRecord)
@@ -32,10 +32,16 @@ const app = new Hono()
 
         // 记录所有借阅记录 id
         const borrowingIds = borrowings.map((b) => b.id);
-        const result = await db
-          .select()
-          .from(renewalRecord)
-          .where(inArray(renewalRecord.borrowingId, borrowingIds));
+        const result = await db.query.renewalRecord.findMany({
+          where: inArray(renewalRecord.borrowingId, borrowingIds),
+          with: {
+            borrowing: {
+              with: {
+                book: true,
+              },
+            },
+          },
+        });
 
         return c.json({ data: result });
       } catch (error) {
@@ -59,17 +65,21 @@ const app = new Hono()
       try {
         const { status, borrowingId } = c.req.valid('query');
 
-        const result = await db
-          .select()
-          .from(renewalRecord)
-          .where(
-            and(
-              status ? eq(renewalRecord.status, status) : undefined, // 筛选，如果传进去 undefined ，Drizzle 就会忽略
-              borrowingId
-                ? eq(renewalRecord.borrowingId, borrowingId)
-                : undefined,
-            ),
-          );
+        const result = await db.query.renewalRecord.findMany({
+          where: and(
+            status ? eq(renewalRecord.status, status) : undefined,
+            borrowingId
+              ? eq(renewalRecord.borrowingId, borrowingId)
+              : undefined,
+          ),
+          with: {
+            borrowing: {
+              with: {
+                book: true,
+              },
+            },
+          },
+        });
         return c.json({ data: result });
       } catch (error) {
         console.error('查询续借记录失败:', error);

@@ -151,7 +151,8 @@ export default function RenewalManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>借阅记录ID</TableHead>
+                  <TableHead>书名</TableHead>
+                  <TableHead>ISBN</TableHead>
                   <TableHead>续借天数</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>申请时间</TableHead>
@@ -162,7 +163,7 @@ export default function RenewalManagement() {
                 {renewals.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className='text-center text-muted-foreground py-8'
                     >
                       暂无续借记录
@@ -172,7 +173,12 @@ export default function RenewalManagement() {
                 {renewals.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>{record.id}</TableCell>
-                    <TableCell>{record.borrowingId}</TableCell>
+                    <TableCell className='font-medium'>
+                      {record.borrowing?.book?.bookName}
+                    </TableCell>
+                    <TableCell className='font-mono text-sm'>
+                      {record.borrowing?.ISBN}
+                    </TableCell>
                     <TableCell>{record.renewalDays} 天</TableCell>
                     <TableCell>{getStatusBadge(record.status)}</TableCell>
                     <TableCell>

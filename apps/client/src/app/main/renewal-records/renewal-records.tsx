@@ -55,7 +55,8 @@ export default function RenewalRecords() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>借阅记录ID</TableHead>
+                  <TableHead>书名</TableHead>
+                  <TableHead>ISBN</TableHead>
                   <TableHead>续借天数</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>申请日期</TableHead>
@@ -66,7 +67,7 @@ export default function RenewalRecords() {
                 {renewals.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className='text-center text-muted-foreground py-8'
                     >
                       暂无续借记录
@@ -75,12 +76,17 @@ export default function RenewalRecords() {
                 )}
                 {renewals.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell>{r.borrowingId}</TableCell>
+                    <TableCell className='font-medium'>
+                      {r.borrowing?.book?.bookName}
+                    </TableCell>
+                    <TableCell className='font-mono text-sm'>
+                      {r.borrowing?.ISBN}
+                    </TableCell>
                     <TableCell>{r.renewalDays} 天</TableCell>
                     <TableCell>{getStatusBadge(r.status)}</TableCell>
                     <TableCell>{String(r.createdAt).split('T')[0]}</TableCell>
                     <TableCell className='text-muted-foreground text-sm'>
-                      {r.rejectReason ?? '-'}
+                      {r.rejectReason}
                     </TableCell>
                   </TableRow>
                 ))}
