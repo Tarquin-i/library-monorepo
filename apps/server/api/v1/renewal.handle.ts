@@ -165,30 +165,52 @@ const app = new Hono()
         if (existing.length === 0) {
           return c.json({ message: '续借记录不存在' }, 404);
         }
+
         if (existing[0].status !== 'pending') {
           return c.json({ message: '只能审批待审核的续借申请' }, 400);
         }
 
-        // 更新续借记录状态
-        const result = await db
-          .update(renewalRecord)
-          .set({
-            status: 'approved',
-            reviewerId,
-          })
-          .where(eq(renewalRecord.id, id))
-          .returning();
-
-        // 更新借阅记录的还书日期和续借次数
-        await db
-          .update(borrowingRecord)
-          .set({
-            dueDate: sql`${borrowingRecord.dueDate} + ${existing[0].renewalDays} * interval '1 day'`,
-            renewalCount: sql`${borrowingRecord.renewalCount} + 1`,
-          })
+        const borrowing = await db
+          .select()
+          .from(borrowingRecord)
           .where(eq(borrowingRecord.id, existing[0].borrowingId));
 
-        return c.json({ data: result[0] });
+        if (borrowing.length === 0) {
+          return c.json({ message: '关联借阅记录不存在' }, 404);
+        }
+
+        if (borrowing[0].status !== 'approved') {
+          return c.json({ message: '只能审批已借出的续借申请' }, 400);
+        }
+
+        if (!borrowing[0].dueDate) {
+          return c.json({ message: '借阅记录缺少应还日期，无法审批续借' }, 400);
+        }
+
+        // 更新续借记录状态
+        const result = await db.transaction(async (tx) => {
+          const approved = await tx
+            .update(renewalRecord)
+            .set({
+              status: 'approved',
+              reviewerId,
+            })
+            .where(eq(renewalRecord.id, id))
+            .returning();
+
+          // 更新借阅记录的还书日期和续借次数
+          await tx
+            .update(borrowingRecord)
+            .set({
+              dueDate: sql`${borrowingRecord.dueDate} + ${existing[0].renewalDays} * interval '1 day'`,
+              renewalCount: sql`${borrowingRecord.renewalCount} + 1`,
+            })
+            .where(eq(borrowingRecord.id, existing[0].borrowingId));
+
+          return approved[0];
+        });
+
+        return c.json({ data: result });
       } catch (error) {
         console.error('审批续借申请失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);

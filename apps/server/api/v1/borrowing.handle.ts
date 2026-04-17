@@ -210,26 +210,18 @@ const app = new Hono()
           return c.json({ message: '只能审批待审核的借阅申请' }, 400);
         }
 
-        const borrowDate = new Date();
-        const dueDate = new Date();
-        // 计算归还时间
-        dueDate.setDate(borrowDate.getDate() + existing[0].borrowDays);
-
-        const result = await db
-          .update(borrowingRecord)
-          .set({
-            status: 'approved',
-            reviewerId,
-            borrowDate,
-            dueDate,
-          })
-          .where(eq(borrowingRecord.id, id))
-          .returning();
-
         const bookData = await db
           .select()
           .from(book)
           .where(eq(book.ISBN, existing[0].ISBN));
+
+        if (bookData.length === 0) {
+          return c.json({ message: '图书不存在' }, 404);
+        }
+
+        if (bookData[0].status !== 'available') {
+          return c.json({ message: '当前图书状态不允许审批借阅' }, 400);
+        }
 
         if (bookData[0].availableStock < existing[0].quantity) {
           return c.json(
@@ -240,14 +232,34 @@ const app = new Hono()
           );
         }
 
-        await db
-          .update(book)
-          .set({
-            availableStock: sql`${book.availableStock} - ${existing[0].quantity}`,
-          }) // 更新图书库存
-          .where(eq(book.ISBN, result[0].ISBN));
+        const borrowDate = new Date();
+        const dueDate = new Date();
+        // 计算归还时间
+        dueDate.setDate(borrowDate.getDate() + existing[0].borrowDays);
 
-        return c.json({ data: result[0] });
+        const result = await db.transaction(async (tx) => {
+          const approved = await tx
+            .update(borrowingRecord)
+            .set({
+              status: 'approved',
+              reviewerId,
+              borrowDate,
+              dueDate,
+            })
+            .where(eq(borrowingRecord.id, id))
+            .returning();
+
+          await tx
+            .update(book)
+            .set({
+              availableStock: sql`${book.availableStock} - ${existing[0].quantity}`,
+            }) // 更新图书库存
+            .where(eq(book.ISBN, existing[0].ISBN));
+
+          return approved[0];
+        });
+
+        return c.json({ data: result });
       } catch (error) {
         console.error('审批申请失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);
@@ -348,6 +360,7 @@ const app = new Hono()
         if (existing.length === 0) {
           return c.json({ message: '借阅记录不存在' }, 404);
         }
+
         if (existing[0].status !== 'return_pending') {
           return c.json({ message: '只能确认归还申请中的借阅记录' }, 400);
         }
@@ -364,22 +377,25 @@ const app = new Hono()
           );
         }
 
-        const result = await db
-          .update(borrowingRecord)
-          .set({ status: 'returned', returnDate, overdueDays })
-          .where(eq(borrowingRecord.id, id))
-          .returning();
+        const result = await db.transaction(async (tx) => {
+          const returned = await tx
+            .update(borrowingRecord)
+            .set({ status: 'returned', returnDate, overdueDays })
+            .where(eq(borrowingRecord.id, id))
+            .returning();
 
-        // 归还后回填库存
-        await db
-          .update(book)
-          .set({
-            availableStock: sql`${book.availableStock} + 1`,
-            status: 'available' as const,
-          })
-          .where(eq(book.ISBN, result[0].ISBN));
+          await tx
+            .update(book)
+            .set({
+              availableStock: sql`${book.availableStock} + ${existing[0].quantity}`,
+              status: 'available' as const,
+            })
+            .where(eq(book.ISBN, existing[0].ISBN));
 
-        return c.json({ data: result[0] });
+          return returned[0];
+        });
+
+        return c.json({ data: result });
       } catch (error) {
         console.error('确认归还失败:', error);
         return c.json({ message: '服务器错误，请稍后重试' }, 500);
