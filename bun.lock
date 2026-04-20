@@ -1,12 +1,12 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "demo-monorepo",
       "dependencies": {
         "dotenv": "^17.3.1",
         "drizzle-orm": "^0.45.1",
+        "hono-alibaba-cloud-fc3-adapter": "^1.0.2",
         "pg": "^8.20.0",
       },
       "devDependencies": {
@@ -1112,6 +1112,8 @@
     "headers-polyfill": ["headers-polyfill@4.0.3", "", {}, "sha512-IScLbePpkvO846sIwOtOTDjutRMWdXdJmXdMvk6gCBHxFO8d+QKOQedyZSxFTTFYRSmlgSTDtXqqq4pcenBXLQ=="],
 
     "hono": ["hono@4.12.9", "", {}, "sha512-wy3T8Zm2bsEvxKZM5w21VdHDDcwVS1yUFFY6i8UobSsKfFceT7TOwhbhfKsDyx7tYQlmRM5FLpIuYvNFyjctiA=="],
+
+    "hono-alibaba-cloud-fc3-adapter": ["hono-alibaba-cloud-fc3-adapter@1.0.2", "", { "peerDependencies": { "hono": "^4.6.12" } }, "sha512-FpggT8IAQZ5sEXGi1h6iDWvF+rth/7zNpOYvQW2mtOSUwy1tzrsHZWnj17hWZvWOb7lPOUSqYzRxT0nqR5+0mw=="],
 
     "html-encoding-sniffer": ["html-encoding-sniffer@6.0.0", "", { "dependencies": { "@exodus/bytes": "^1.6.0" } }, "sha512-CV9TW3Y3f8/wT0BRFc1/KAVQ3TUHiXmaAb6VW9vtiMFf7SLoMd1PdAc4W3KFOFETBJUb90KatHqlsZMWV+R9Gg=="],
 

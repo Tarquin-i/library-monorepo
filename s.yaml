@@ -1,0 +1,65 @@
+edition: 3.0.0
+name: library-system
+access: default
+
+vars:
+  region: cn-shenzhen
+  functionClientName: library-client
+  functionServerName: library-server
+
+resources:
+  library-client:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.functionClientName}
+      runtime: 'nodejs20'
+      code: ./apps/client/dist
+      handler: index.handler
+      cpu: 1
+      memorySize: 1024
+      diskSize: 512
+      timeout: 300
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - HEAD
+              - OPTIONS
+
+  library-server:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.functionServerName}
+      runtime: 'nodejs20'
+      code: ./apps/server/dist
+      handler: index.handler
+      cpu: 2
+      memorySize: 2048
+      diskSize: 512
+      timeout: 1800
+      environmentVariables:
+        DATABASE_URL: ${env(DATABASE_URL)}
+        BETTER_AUTH_SECRET: ${env(BETTER_AUTH_SECRET)}
+        BETTER_AUTH_URL: ${env(BETTER_AUTH_URL)}
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - HEAD
+              - OPTIONS
