@@ -1,8 +1,9 @@
 import { lastLoginMethodClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
+import { getServerBaseUrl } from './utils';
 
 export const authClient = createAuthClient({
-  /** The base URL of the server (optional if you're using the same domain) */
-  baseURL: 'http://localhost:3100',
+  /** 认证请求和 RPC 保持同一服务端地址。 */
+  baseURL: getServerBaseUrl(),
   plugins: [lastLoginMethodClient()],
 });

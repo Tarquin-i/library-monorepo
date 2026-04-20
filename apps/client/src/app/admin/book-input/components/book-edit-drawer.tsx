@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 export function BookEditDrawer({
   open,
@@ -187,7 +188,8 @@ export function BookEditDrawer({
           </div>
           <div className='space-y-2'>
             <Label>简介</Label>
-            <Input
+            <Textarea
+              rows={4}
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })

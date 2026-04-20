@@ -14,6 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
 
 const bookFormData = {
   ISBN: '',
@@ -198,9 +199,10 @@ export function BookInputForm({
           </div>
           <div className='space-y-2'>
             <Label>简介</Label>
-            <Input
+            <Textarea
               name='description'
               placeholder='图书简介（选填）'
+              rows={4}
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
