@@ -143,18 +143,36 @@ const app = new Hono()
           return c.json({ message: '书籍不存在' }, 404);
         }
 
+        const currentBook = existing[0];
+
+        if (currentBook.availableStock !== currentBook.totalStock) {
+          return c.json({ message: '该书籍还有未归还库存，无法删除' }, 400);
+        }
+
         // 检查是否有借阅记录
         const records = await db
           .select()
           .from(borrowingRecord)
           .where(eq(borrowingRecord.ISBN, isbn));
 
-        if (records.length > 0) {
-          return c.json({ message: '该书籍有借阅记录，无法删除' }, 400);
+        // 只要满足以下其中一条，就认为该书籍仍有关联借阅流程，无法删除：
+        const hasActiveBorrowingFlow = records.some(
+          (record) =>
+            record.status === 'pending' ||
+            record.status === 'approved' ||
+            record.status === 'return_pending',
+        );
+
+        if (hasActiveBorrowingFlow) {
+          return c.json({ message: '该书籍仍有关联借阅流程，无法删除' }, 400);
         }
 
-        // 删除书籍
-        await db.delete(book).where(eq(book.ISBN, isbn));
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(borrowingRecord)
+            .where(eq(borrowingRecord.ISBN, isbn));
+          await tx.delete(book).where(eq(book.ISBN, isbn));
+        });
 
         return c.json({ data: { success: true } });
       } catch (error) {

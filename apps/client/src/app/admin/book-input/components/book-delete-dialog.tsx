@@ -39,10 +39,10 @@ export function BookDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>确认删除图书</AlertDialogTitle>
           <AlertDialogDescription>
             确定要删除《{book.bookName}》（ISBN: {book.ISBN}
-            ）吗？此操作不可撤销。
+            ）吗？删除后会同时清理该书关联的借阅与续借历史记录，此操作不可撤销。
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
