@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
+import { handle } from 'hono-alibaba-cloud-fc3-adapter';
 import api from './api/route';
 import { auth } from './lib/auth';
 import { initCors } from './lib/cors';
 import { logger } from './lib/logger';
 import { requireAuth } from './lib/permission';
-import { handle } from 'hono-alibaba-cloud-fc3-adapter';
 
 function createApp() {
   const app = new Hono();
