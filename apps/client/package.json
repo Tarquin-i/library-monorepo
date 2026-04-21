@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "build:server": "esbuild server.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
     "lint": "biome lint",
     "preview": "vite preview",
     "format": "biome format",
