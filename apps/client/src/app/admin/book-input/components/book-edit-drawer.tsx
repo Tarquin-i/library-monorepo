@@ -40,21 +40,19 @@ export function BookEditDrawer({
 
   // 编辑的书籍变更时，用当前书籍数据填充表单
   useEffect(() => {
-    if (book) {
-      setFormData({
-        bookName: book.bookName,
-        author: book.author,
-        publisher: book.publisher,
-        publishDate: book.publishDate,
-        category: book.category,
-        price: book.price,
-        totalStock: book.totalStock,
-        availableStock: book.availableStock,
-        description: book.description ?? '',
-        coverImage: book.coverImage ?? '',
-        status: book.status,
-      });
-    }
+    setFormData({
+      bookName: book.bookName,
+      author: book.author,
+      publisher: book.publisher,
+      publishDate: book.publishDate,
+      category: book.category,
+      price: book.price,
+      totalStock: book.totalStock,
+      availableStock: book.availableStock,
+      description: book.description ?? '',
+      coverImage: book.coverImage ?? '',
+      status: book.status,
+    });
   }, [book]);
 
   const updateBook = useMutation({
@@ -66,8 +64,6 @@ export function BookEditDrawer({
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!book) return;
-
     updateBook.mutate(
       { isbn: book.ISBN, data: formData },
       {

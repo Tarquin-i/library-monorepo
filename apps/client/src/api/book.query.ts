@@ -5,6 +5,16 @@ export type CreateBookInput = InferRequestType<
   typeof client.books.$post
 >['json'];
 
+// 后端传出的类型
+export type Book = InferResponseType<
+  typeof client.books.$get,
+  200
+>['data'][number];
+
+export type UpdateBookInput = InferRequestType<
+  (typeof client.books)[':isbn']['$patch']
+>['json'];
+
 export const listBooksQuery = {
   queryKey: ['books'],
   queryFn: async () => {
@@ -16,12 +26,6 @@ export const listBooksQuery = {
     return json.data;
   },
 };
-
-// 后端传出的类型
-export type Book = InferResponseType<
-  typeof client.books.$get,
-  200
->['data'][number];
 
 // mutation 的入参可以通过 InferRequestType 提取请求体类型
 export const createBookMutation = {
@@ -37,10 +41,6 @@ export const createBookMutation = {
     return { isUpdated: res.status === 200 };
   },
 };
-
-export type UpdateBookInput = InferRequestType<
-  (typeof client.books)[':isbn']['$patch']
->['json'];
 
 export const updateBookMutation = {
   mutationFn: async ({

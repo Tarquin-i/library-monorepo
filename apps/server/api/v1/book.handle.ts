@@ -9,7 +9,7 @@ import { requireRole } from '../../lib/permission';
 
 // 录入书籍的参数校验
 const createBookSchema = z.object({
-  ISBN: z.string().min(1),
+  ISBN: z.string().trim().min(1),
   bookName: z.string().min(1),
   author: z.string().min(1),
   publisher: z.string().min(1),
@@ -93,7 +93,7 @@ const app = new Hono()
   .patch(
     '/books/:isbn',
     requireRole('admin', 'librarian'),
-    zValidator('param', z.object({ isbn: z.string() })),
+    zValidator('param', z.object({ isbn: z.string().trim().min(1) })),
     zValidator('json', updateBookSchema),
     async (c) => {
       try {
@@ -110,11 +110,20 @@ const app = new Hono()
           return c.json({ message: '书籍不存在' }, 404);
         }
 
+        const currentBook = existing[0];
+        const nextTotalStock = data.totalStock ?? currentBook.totalStock;
+        const nextAvailableStock =
+          data.availableStock ?? currentBook.availableStock;
+
+        if (nextAvailableStock > nextTotalStock) {
+          return c.json({ message: '可借数量不能大于馆藏数量' }, 400);
+        }
+
         // 一次性更新所有字段
         const result = await db
           .update(book)
           .set(data)
-          .where(eq(book.ISBN, isbn))
+          .where(eq(book.ISBN, currentBook.ISBN))
           .returning();
 
         return c.json({ data: result[0] });
@@ -128,7 +137,7 @@ const app = new Hono()
   .delete(
     '/books/:isbn',
     requireRole('admin', 'librarian'),
-    zValidator('param', z.object({ isbn: z.string() })),
+    zValidator('param', z.object({ isbn: z.string().trim().min(1) })),
     async (c) => {
       try {
         const { isbn } = c.req.valid('param');
@@ -143,19 +152,13 @@ const app = new Hono()
           return c.json({ message: '书籍不存在' }, 404);
         }
 
-        const currentBook = existing[0];
-
-        if (currentBook.availableStock !== currentBook.totalStock) {
-          return c.json({ message: '该书籍还有未归还库存，无法删除' }, 400);
-        }
-
         // 检查是否有借阅记录
         const records = await db
           .select()
           .from(borrowingRecord)
           .where(eq(borrowingRecord.ISBN, isbn));
 
-        // 只要满足以下其中一条，就认为该书籍仍有关联借阅流程，无法删除：
+        // 删除时以借阅流程状态为准，避免库存字段与历史流水脱节时误判。
         const hasActiveBorrowingFlow = records.some(
           (record) =>
             record.status === 'pending' ||

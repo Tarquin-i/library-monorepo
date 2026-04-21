@@ -35,6 +35,9 @@ export default function AccessControl() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('角色修改成功');
     },
+    onError: (error: Error) => {
+      toast.error(error.message || '角色修改失败');
+    },
   });
 
   function handleRoleChange(userId: string, newRole: string) {
