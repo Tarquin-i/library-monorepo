@@ -1,6 +1,11 @@
 import type { Context, Next } from 'hono';
 import { auth } from './auth';
 
+export type AuthenticatedUser = {
+  id: string;
+  role: string;
+};
+
 // 检查是否登录
 export const requireAuth = async (c: Context, next: Next) => {
   const session = await auth.api.getSession({
@@ -17,10 +22,15 @@ export const requireAuth = async (c: Context, next: Next) => {
   await next();
 };
 
+// 获取当前用户角色
+export function getCurrentUser(c: Context) {
+  return c.get('user') as AuthenticatedUser | undefined;
+}
+
 // 检查角色
 export const requireRole = (...roles: string[]) => {
   return async (c: Context, next: Next) => {
-    const user = c.get('user');
+    const user = getCurrentUser(c);
 
     if (!user) {
       return c.json({ message: '未登录' }, 401);

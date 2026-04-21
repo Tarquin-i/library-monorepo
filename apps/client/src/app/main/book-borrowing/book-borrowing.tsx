@@ -80,10 +80,9 @@ export default function BookBorrowing() {
 
   // 确认借阅，调用借阅申请接口
   const handleConfirmBorrow = () => {
-    if (!selectedISBN || !session?.user?.id) return;
+    if (!selectedISBN) return;
     borrowMutation.mutate({
       ISBN: selectedISBN,
-      userId: session.user.id,
       quantity,
       borrowDays,
     });

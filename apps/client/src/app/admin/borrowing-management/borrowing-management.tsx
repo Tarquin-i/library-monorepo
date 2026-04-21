@@ -38,11 +38,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { authClient } from '@/lib/better-auth';
 
 export default function BorrowingManagement() {
-  const { data: session } = authClient.useSession();
-  const reviewerId = session?.user?.id ?? ''; // 当前用户 id
   const queryClient = useQueryClient();
 
   const [status, setStatus] = useState<BorrowingsQuery>(undefined);
@@ -135,7 +132,6 @@ export default function BorrowingManagement() {
       return toast.error('请填写拒绝原因');
     rejectMutation.mutate({
       id: rejectDialog.id,
-      reviewerId,
       rejectReason: rejectReason.trim(),
     });
   }
@@ -230,7 +226,6 @@ export default function BorrowingManagement() {
                               onClick={() =>
                                 approveMutation.mutate({
                                   id: record.id,
-                                  reviewerId,
                                 })
                               }
                             >

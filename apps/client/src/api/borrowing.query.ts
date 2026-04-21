@@ -27,9 +27,7 @@ export const applyBorrowingMutation = {
 export const myBorrowingRecordsQuery = (userId: string) => ({
   queryKey: ['myBorrowings', userId],
   queryFn: async () => {
-    const res = await client.borrowings['my-records'].$get({
-      query: { userId },
-    });
+    const res = await client.borrowings['my-records'].$get();
     const json = await res.json();
     if ('message' in json) {
       throw new Error(json.message || '获取借阅记录失败');
@@ -86,16 +84,9 @@ export const listBorrowingsQuery = (status?: BorrowingsQuery) => ({
 
 // 管理员批准借阅申请
 export const approveBorrowingMutation = {
-  mutationFn: async ({
-    id,
-    reviewerId,
-  }: {
-    id: number;
-    reviewerId: string;
-  }) => {
+  mutationFn: async ({ id }: { id: number }) => {
     const res = await client.borrowings[':id'].approve.$patch({
       param: { id: String(id) },
-      json: { reviewerId },
     });
     const json = await res.json();
     if ('message' in json) {
@@ -109,16 +100,14 @@ export const approveBorrowingMutation = {
 export const rejectBorrowingMutation = {
   mutationFn: async ({
     id,
-    reviewerId,
     rejectReason,
   }: {
     id: number;
-    reviewerId: string;
     rejectReason: string;
   }) => {
     const res = await client.borrowings[':id'].reject.$patch({
       param: { id: String(id) },
-      json: { reviewerId, rejectReason },
+      json: { rejectReason },
     });
     const json = await res.json();
     if ('message' in json) {
