@@ -37,11 +37,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { authClient } from '@/lib/better-auth';
 
 export default function RenewalManagement() {
-  const { data: session } = authClient.useSession();
-  const reviewerId = session?.user?.id ?? '';
   const queryClient = useQueryClient();
 
   const [status, setStatus] = useState<RenewalsQuery>(undefined);
@@ -108,7 +105,6 @@ export default function RenewalManagement() {
     if (!rejectDialog.id || !rejectReason.trim()) return;
     rejectMutation.mutate({
       id: rejectDialog.id,
-      reviewerId,
       rejectReason: rejectReason.trim(),
     });
   }
@@ -192,7 +188,6 @@ export default function RenewalManagement() {
                             onClick={() =>
                               approveMutation.mutate({
                                 id: record.id,
-                                reviewerId,
                               })
                             }
                           >

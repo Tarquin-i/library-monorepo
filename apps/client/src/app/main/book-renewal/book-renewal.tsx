@@ -114,7 +114,6 @@ export default function BookRenewal() {
                           onClick={() =>
                             renewalMutation.mutate({
                               borrowingId: record.id,
-                              userId,
                             })
                           }
                         >

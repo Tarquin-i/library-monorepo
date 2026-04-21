@@ -8,26 +8,28 @@ import { zValidator } from '@hono/zod-validator';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { requireAuth, requireRole } from '../../lib/permission';
+import { getCurrentUser, requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 读者查询自己的续借记录
   .get(
     '/renewals/my-records',
     requireAuth,
-    zValidator('query', z.object({ userId: z.string() })),
     async (c) => {
       try {
-        const { userId } = c.req.valid('query');
+        const currentUser = getCurrentUser(c);
+        if (!currentUser) {
+          return c.json({ message: '未登录' }, 401);
+        }
 
         // 先查出当前用户关联的借阅记录，再回查续借记录和图书信息
         const borrowings = await db
           .select()
           .from(borrowingRecord)
-          .where(eq(borrowingRecord.userId, userId));
+          .where(eq(borrowingRecord.userId, currentUser.id));
 
         if (borrowings.length === 0) {
-          return c.json({ message: '续借记录不存在' }, 404);
+          return c.json({ data: [] });
         }
 
         // 记录所有借阅记录 id
@@ -94,11 +96,15 @@ const app = new Hono()
       'json',
       z.object({
         borrowingId: z.number(),
-        userId: z.string(),
       }),
     ),
     async (c) => {
       try {
+        const currentUser = getCurrentUser(c);
+        if (!currentUser) {
+          return c.json({ message: '未登录' }, 401);
+        }
+
         const { borrowingId } = c.req.valid('json');
 
         // 查询借阅记录
@@ -109,6 +115,10 @@ const app = new Hono()
 
         if (borrowing.length === 0) {
           return c.json({ message: '借阅记录不存在' }, 404);
+        }
+
+        if (borrowing[0].userId !== currentUser.id) {
+          return c.json({ message: '只能为自己的借阅记录申请续借' }, 403);
         }
 
         // 检查是否可以续借
@@ -151,11 +161,14 @@ const app = new Hono()
     '/renewals/:id/approve',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
-    zValidator('json', z.object({ reviewerId: z.string() })),
     async (c) => {
       try {
+        const currentUser = getCurrentUser(c);
+        if (!currentUser) {
+          return c.json({ message: '未登录' }, 401);
+        }
+
         const { id } = c.req.valid('param');
-        const { reviewerId } = c.req.valid('json');
 
         const existing = await db
           .select()
@@ -193,7 +206,7 @@ const app = new Hono()
             .update(renewalRecord)
             .set({
               status: 'approved',
-              reviewerId,
+              reviewerId: currentUser.id,
             })
             .where(eq(renewalRecord.id, id))
             .returning();
@@ -224,12 +237,17 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     zValidator(
       'json',
-      z.object({ reviewerId: z.string(), rejectReason: z.string() }),
+      z.object({ rejectReason: z.string() }),
     ),
     async (c) => {
       try {
+        const currentUser = getCurrentUser(c);
+        if (!currentUser) {
+          return c.json({ message: '未登录' }, 401);
+        }
+
         const { id } = c.req.valid('param');
-        const { reviewerId, rejectReason } = c.req.valid('json');
+        const { rejectReason } = c.req.valid('json');
 
         const existing = await db
           .select()
@@ -248,7 +266,7 @@ const app = new Hono()
           .update(renewalRecord)
           .set({
             status: 'rejected',
-            reviewerId,
+            reviewerId: currentUser.id,
             rejectReason,
           })
           .where(eq(renewalRecord.id, id))

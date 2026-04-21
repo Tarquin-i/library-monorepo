@@ -8,15 +8,9 @@ export type RenewalsQuery = InferRequestType<
 
 // 读者申请续借
 export const applyRenewalMutation = {
-  mutationFn: async ({
-    borrowingId,
-    userId,
-  }: {
-    borrowingId: number;
-    userId: string;
-  }) => {
+  mutationFn: async ({ borrowingId }: { borrowingId: number }) => {
     const res = await client.renewals.apply.$post({
-      json: { borrowingId, userId },
+      json: { borrowingId },
     });
     const json = await res.json();
     if ('message' in json) {
@@ -30,9 +24,7 @@ export const applyRenewalMutation = {
 export const myRenewalsQuery = (userId: string) => ({
   queryKey: ['myRenewals', userId],
   queryFn: async () => {
-    const res = await client.renewals['my-records'].$get({
-      query: { userId },
-    });
+    const res = await client.renewals['my-records'].$get();
     const json = await res.json();
     if ('message' in json) {
       throw new Error(json.message || '获取续借记录失败');
@@ -59,16 +51,9 @@ export const listRenewalsQuery = (status?: RenewalsQuery) => ({
 
 // 管理员批准续借申请
 export const approveRenewalMutation = {
-  mutationFn: async ({
-    id,
-    reviewerId,
-  }: {
-    id: number;
-    reviewerId: string;
-  }) => {
+  mutationFn: async ({ id }: { id: number }) => {
     const res = await client.renewals[':id'].approve.$patch({
       param: { id: String(id) },
-      json: { reviewerId },
     });
     const json = await res.json();
     if ('message' in json) {
@@ -82,16 +67,14 @@ export const approveRenewalMutation = {
 export const rejectRenewalMutation = {
   mutationFn: async ({
     id,
-    reviewerId,
     rejectReason,
   }: {
     id: number;
-    reviewerId: string;
     rejectReason: string;
   }) => {
     const res = await client.renewals[':id'].reject.$patch({
       param: { id: String(id) },
-      json: { reviewerId, rejectReason },
+      json: { rejectReason },
     });
     const json = await res.json();
     if ('message' in json) {
