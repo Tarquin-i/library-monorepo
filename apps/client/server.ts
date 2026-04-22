@@ -8,8 +8,15 @@ const app = new Hono();
 // 使用 __dirname 获取当前目录（CommonJS 兼容）
 const STATIC_DIR = __dirname;
 
+// 把字符串结尾连续的 / 全部删掉。
+function trimTrailingSlash(url: string) {
+  return url.replace(/\/+$/, '');
+}
+
 // 后端 API 地址，通过环境变量配置
-const API_BACKEND_URL = process.env.API_BACKEND_URL || '';
+const API_BACKEND_URL = process.env.API_BACKEND_URL
+  ? trimTrailingSlash(process.env.API_BACKEND_URL)
+  : '';
 
 const mimeTypes: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -56,7 +63,10 @@ app.all('/api/*', async (c) => {
     const response = await fetch(targetUrl, {
       method: c.req.method,
       headers,
-      body: c.req.method !== 'GET' && c.req.method !== 'HEAD' ? c.req.raw.body : undefined,
+      body:
+        c.req.method !== 'GET' && c.req.method !== 'HEAD'
+          ? c.req.raw.body
+          : undefined,
       // @ts-ignore - duplex is needed for streaming body
       duplex: 'half',
     });
@@ -72,7 +82,10 @@ app.all('/api/*', async (c) => {
     // 特别检查 set-auth-token 头
     const authToken = response.headers.get('set-auth-token');
     if (authToken) {
-      console.log('[Proxy] Found set-auth-token:', authToken.substring(0, 20) + '...');
+      console.log(
+        '[Proxy] Found set-auth-token:',
+        authToken.substring(0, 20) + '...',
+      );
     }
 
     const responseHeaders = new Headers(response.headers);
@@ -121,7 +134,10 @@ app.get('*', async (c) => {
     return new Response(content, { headers });
   } catch {
     try {
-      const indexHtml = await fs.readFile(path.join(STATIC_DIR, 'index.html'), 'utf-8');
+      const indexHtml = await fs.readFile(
+        path.join(STATIC_DIR, 'index.html'),
+        'utf-8',
+      );
       return c.html(indexHtml);
     } catch {
       return c.text('Not Found', 404);
