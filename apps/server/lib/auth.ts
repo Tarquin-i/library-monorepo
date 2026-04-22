@@ -2,9 +2,20 @@ import { db } from '@demo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
+const trustedOrigins = ['http://localhost:3000'];
+const betterAuthUrl = process.env.BETTER_AUTH_URL?.trim();
+
+if (betterAuthUrl) {
+  try {
+    trustedOrigins.push(new URL(betterAuthUrl).origin);
+  } catch {
+    // 环境变量写烂了就忽略，别让服务直接起不来。
+  }
+}
+
 export const auth = betterAuth({
-  // 给 better-auth 添加自己的地址信任校验（注：cors 是浏览器层面的安全机制）
-  trustedOrigins: ['http://localhost:3000'],
+  // 白名单来源走环境变量，别把线上域名写死在代码里。
+  trustedOrigins: [...new Set(trustedOrigins)],
   database: drizzleAdapter(db, {
     provider: 'pg', // or "mysql", "sqlite"
   }),
