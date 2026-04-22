@@ -20,6 +20,8 @@ resources:
       memorySize: 1024
       diskSize: 512
       timeout: 300
+      environmentVariables:
+        API_BACKEND_URL: ${env(API_BACKEND_URL)}
       triggers:
         - triggerName: httpTrigger
           triggerType: http

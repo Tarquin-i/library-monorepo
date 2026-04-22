@@ -18,6 +18,7 @@ Create the required environment files before running the app:
 
 - `apps/server/.env`
 - `packages/db/.env`
+- `.env.deploy` for Alibaba Cloud FC deployment (copy from `.env.deploy.example`)
 
 ## Common Commands
 
@@ -43,6 +44,20 @@ bun run --cwd packages/db db:push
 bun run --cwd packages/db db:reset
 bun run --cwd packages/db dev
 ```
+
+Deploy to Alibaba Cloud FC:
+
+```sh
+cp .env.deploy.example .env.deploy
+```
+
+Fill `.env.deploy` with your cloud values, then run:
+
+```sh
+bun run deploy
+```
+
+The deploy script loads `.env.deploy`, validates that cloud URLs are not pointing to `localhost`, and then runs `s deploy -t s.yaml --use-local -y`.
 
 ## Notes
 
