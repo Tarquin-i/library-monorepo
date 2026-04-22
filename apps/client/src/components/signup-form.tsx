@@ -18,6 +18,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { authClient } from '@/lib/better-auth';
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const nameId = useId();
   const emailId = useId();
@@ -36,23 +38,35 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('两次输入的密码不匹配，请重新输入。');
       setIsLoading(false);
       return;
     }
-    // 这里可以添加表单验证和提交逻辑
+
+    if (formData.password.length < MIN_PASSWORD_LENGTH) {
+      toast.error(`密码至少需要 ${MIN_PASSWORD_LENGTH} 位。`);
+      setIsLoading(false);
+      return;
+    }
+
     const { data, error } = await authClient.signUp.email({
       email: formData.email,
       password: formData.password,
       name: formData.name,
     });
+
     if (error) {
-      // 处理注册错误
       console.error('注册失败:', error);
-      toast.error('注册失败，请检查您的信息并重试。');
+
+      const message =
+        error.message === 'Password too short'
+          ? `密码至少需要 ${MIN_PASSWORD_LENGTH} 位。`
+          : error.message || '注册失败，请检查您的信息并重试。';
+
+      toast.error(message);
     } else {
-      // 注册成功，处理用户数据
       console.log('注册成功:', data);
       toast.success('注册成功！即将跳转到主页。');
       navigation({ to: '/dashboard' });
@@ -109,10 +123,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 required
-                pattern='^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,}$'
+                minLength={MIN_PASSWORD_LENGTH}
+                pattern={`^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{${MIN_PASSWORD_LENGTH},}$`}
               />
               <FieldDescription>
-                必须在6个字符以上，且包含字母和数字。
+                必须至少 {MIN_PASSWORD_LENGTH} 个字符，且包含字母和数字。
               </FieldDescription>
             </Field>
             <Field>
