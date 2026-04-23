@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { myBorrowingRecordsQuery } from '@/api/borrowing.query';
-import { applyRenewalMutation } from '@/api/renewal.query';
+import { applyRenewalMutation, myRenewalsQuery } from '@/api/renewal.query';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ export default function BookRenewal() {
   const queryClient = useQueryClient();
 
   const { data: records = [] } = useQuery(myBorrowingRecordsQuery(userId));
+  const { data: renewalRecords = [] } = useQuery(myRenewalsQuery(userId));
 
   // 只展示已批准（在借中）的记录
   const activeRecords = records.filter((r) => r.status === 'approved');
@@ -86,47 +87,61 @@ export default function BookRenewal() {
                     </TableCell>
                   </TableRow>
                 )}
-                {activeRecords.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className='font-medium'>
-                      {record.book.bookName}
-                    </TableCell>
-                    <TableCell>{record.book.author}</TableCell>
-                    <TableCell className='font-mono text-sm'>
-                      {record.ISBN}
-                    </TableCell>
-                    <TableCell>
-                      {record.dueDate
-                        ? String(record.dueDate).split('T')[0]
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {record.renewalCount > 0 ? (
-                        <Badge variant='outline'>已续借</Badge>
-                      ) : (
-                        <Badge variant='secondary'>可续借</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {record.renewalCount === 0 ? (
-                        <Button
-                          size='sm'
-                          onClick={() =>
-                            renewalMutation.mutate({
-                              borrowingId: record.id,
-                            })
-                          }
-                        >
-                          申请续借
-                        </Button>
-                      ) : (
-                        <span className='text-sm text-muted-foreground'>
-                          已达续借上限
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {activeRecords.map((record) => {
+                  const hasPendingRenewal = renewalRecords.some(
+                    (renewal) =>
+                      renewal.borrowingId === record.id &&
+                      renewal.status === 'pending',
+                  );
+
+                  return (
+                    <TableRow key={record.id}>
+                      <TableCell className='font-medium'>
+                        {record.book.bookName}
+                      </TableCell>
+                      <TableCell>{record.book.author}</TableCell>
+                      <TableCell className='font-mono text-sm'>
+                        {record.ISBN}
+                      </TableCell>
+                      <TableCell>
+                        {record.dueDate
+                          ? String(record.dueDate).split('T')[0]
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {record.renewalCount > 0 ? (
+                          <Badge variant='outline'>已续借</Badge>
+                        ) : hasPendingRenewal ? (
+                          <Badge variant='secondary'>审核中</Badge>
+                        ) : (
+                          <Badge variant='secondary'>可续借</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {record.renewalCount > 0 ? (
+                          <span className='text-sm text-muted-foreground'>
+                            已达续借上限
+                          </span>
+                        ) : hasPendingRenewal ? (
+                          <span className='text-sm text-muted-foreground'>
+                            等待管理员审批
+                          </span>
+                        ) : (
+                          <Button
+                            size='sm'
+                            onClick={() =>
+                              renewalMutation.mutate({
+                                borrowingId: record.id,
+                              })
+                            }
+                          >
+                            申请续借
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

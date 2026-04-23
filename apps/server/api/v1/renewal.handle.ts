@@ -12,46 +12,42 @@ import { getCurrentUser, requireAuth, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 读者查询自己的续借记录
-  .get(
-    '/renewals/my-records',
-    requireAuth,
-    async (c) => {
-      try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+  .get('/renewals/my-records', requireAuth, async (c) => {
+    try {
+      const currentUser = getCurrentUser(c);
+      if (!currentUser) {
+        return c.json({ message: '未登录' }, 401);
+      }
 
-        // 先查出当前用户关联的借阅记录，再回查续借记录和图书信息
-        const borrowings = await db
-          .select()
-          .from(borrowingRecord)
-          .where(eq(borrowingRecord.userId, currentUser.id));
+      // 先查出当前用户关联的借阅记录，再回查续借记录和图书信息
+      const borrowings = await db
+        .select()
+        .from(borrowingRecord)
+        .where(eq(borrowingRecord.userId, currentUser.id));
 
-        if (borrowings.length === 0) {
-          return c.json({ data: [] });
-        }
+      if (borrowings.length === 0) {
+        return c.json({ data: [] });
+      }
 
-        // 记录所有借阅记录 id
-        const borrowingIds = borrowings.map((b) => b.id);
-        const result = await db.query.renewalRecord.findMany({
-          where: inArray(renewalRecord.borrowingId, borrowingIds),
-          with: {
-            borrowing: {
-              with: {
-                book: true,
-              },
+      // 记录所有借阅记录 id
+      const borrowingIds = borrowings.map((b) => b.id);
+      const result = await db.query.renewalRecord.findMany({
+        where: inArray(renewalRecord.borrowingId, borrowingIds),
+        with: {
+          borrowing: {
+            with: {
+              book: true,
             },
           },
-        });
+        },
+      });
 
-        return c.json({ data: result });
-      } catch (error) {
-        console.error('查询续借记录失败:', error);
-        return c.json({ message: '服务器错误，请稍后重试' }, 500);
-      }
-    },
-  )
+      return c.json({ data: result });
+    } catch (error) {
+      console.error('查询续借记录失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
+    }
+  })
   // 管理员查询续借记录
   .get(
     '/renewals',
@@ -131,14 +127,25 @@ const app = new Hono()
           return c.json({ message: '无法续借，图书已逾期' }, 400);
         }
 
-        // 检查是否已经续借过
-        const existing = await db
+        // 每本书只能续借一次
+        if (borrowing[0].renewalCount > 0) {
+          return c.json({ message: '每本书只能续借一次' }, 400);
+        }
+
+        // 检查是否已有待审核的续借申请
+        const pendingRenewals = await db
           .select()
           .from(renewalRecord)
-          .where(eq(renewalRecord.borrowingId, borrowingId));
+          .where(
+            and(
+              eq(renewalRecord.borrowingId, borrowingId),
+              eq(renewalRecord.status, 'pending'),
+            ),
+          );
 
-        if (existing.length > 0) {
-          return c.json({ message: '每本书只能续借一次' }, 400);
+        // 如果有待审核的续借申请，不能再次申请
+        if (pendingRenewals.length > 0) {
+          return c.json({ message: '已有续借申请待审核' }, 400);
         }
         // 创建续借申请
         const result = await db
@@ -235,10 +242,7 @@ const app = new Hono()
     '/renewals/:id/reject',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
-    zValidator(
-      'json',
-      z.object({ rejectReason: z.string() }),
-    ),
+    zValidator('json', z.object({ rejectReason: z.string() })),
     async (c) => {
       try {
         const currentUser = getCurrentUser(c);
