@@ -1,6 +1,6 @@
 # demo-monorepo
 
-## 跑起来
+## 让shit跑起来
 
 ### 1. 安装依赖
 
