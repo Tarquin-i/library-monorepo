@@ -8,7 +8,7 @@
     "dev": "bun run db:reset && bunx drizzle-kit studio",
     "db:force-push": "drizzle-kit push --force",
     "db:push": "drizzle-kit push",
-    "db:reset": "bun db:push && bun ./seed/index.ts"
+    "db:reset": "bun run db:push && bun ./seed/index.ts"
   },
   "dependencies": {},
   "devDependencies": {}
