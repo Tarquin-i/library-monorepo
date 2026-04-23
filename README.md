@@ -1,50 +1,40 @@
-# Library Monorepo
+# demo-monorepo
 
-A monorepo for a library management system built with Bun workspaces and Turborepo.
+## 跑起来
 
-## Workspace Layout
-
-- `apps/client`: Vite + React client for the library dashboard, borrowing, renewal, and admin flows
-- `apps/server`: Hono API server with Better Auth integration
-- `packages/db`: Drizzle ORM database package, schema definitions, and seed scripts
-
-## Getting Started
+### 1. 安装依赖
 
 ```sh
 bun install
 ```
 
-Create the required environment files before running the app:
-
-- `apps/server/.env`
-- `packages/db/.env`
-
-## Common Commands
-
-Run workspace-wide tasks from the repository root:
+### 2. 创建数据库
 
 ```sh
-bun run build
-bun run lint
-bun run check-types
+bash shit.sh
 ```
 
-Run the main apps individually during development:
+数据库连接：
 
 ```sh
-bun run --cwd apps/client dev
-bun run --cwd apps/server dev
+postgresql://monorepo:123654@localhost:5432/monorepo_local
 ```
 
-Useful database commands:
+### 3. 复制环境变量
 
 ```sh
-bun run --cwd packages/db db:push
+cp apps/client/.env.example apps/client/.env
+cp apps/server/.env.example apps/server/.env
+cp packages/db/.env.example packages/db/.env
+```
+### 4. 初始化并启动
+
+```sh
 bun run --cwd packages/db db:reset
-bun run --cwd packages/db dev
+bun dev
 ```
 
-## Notes
+启动后访问：
 
-- Build outputs are written to each package's `dist` directory.
-- TypeScript incremental cache files such as `*.tsbuildinfo` are treated as local artifacts and should not be committed.
+- 前端：<http://localhost:3000>
+- 后端：<http://localhost:3100>
