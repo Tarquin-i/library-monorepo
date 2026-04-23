@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import defaultBookCover from '@/assets/images/default-book-cover.svg';
 import {
   Dialog,
   DialogContent,
@@ -21,17 +22,15 @@ export function BookCoverPreview({
   title: string;
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const imageSrc = src?.trim();
+  const imageSrc = src?.trim() || '';
+  const coverSrc =
+    imageSrc && failedSrc !== imageSrc ? imageSrc : defaultBookCover;
 
-  if (!imageSrc || failedSrc === imageSrc) {
-    return (
-      <span className='text-muted-foreground inline-flex h-14 w-10 items-center justify-center text-center text-[11px] leading-tight'>
-        无封面
-      </span>
-    );
-  }
-
-  const handleImageError = () => setFailedSrc(imageSrc);
+  const handleImageError = () => {
+    if (imageSrc) {
+      setFailedSrc(imageSrc);
+    }
+  };
   return (
     <Dialog>
       <HoverCard openDelay={120} closeDelay={80}>
@@ -43,9 +42,9 @@ export function BookCoverPreview({
               aria-label={`查看《${title}》封面`}
             >
               <img
-                src={imageSrc}
+                src={coverSrc}
                 alt={title}
-                onError={handleImageError}
+                onError={imageSrc ? handleImageError : undefined}
                 loading='lazy'
                 className='h-14 w-10 rounded-md border object-cover shadow-xs'
               />
@@ -58,9 +57,9 @@ export function BookCoverPreview({
           className='w-auto bg-background p-2'
         >
           <img
-            src={imageSrc}
+            src={coverSrc}
             alt={title}
-            onError={handleImageError}
+            onError={imageSrc ? handleImageError : undefined}
             className='h-60 w-44 rounded-lg object-cover'
           />
         </HoverCardContent>
@@ -73,9 +72,9 @@ export function BookCoverPreview({
         </DialogHeader>
         <div className='bg-muted/30 p-4 pr-12'>
           <img
-            src={imageSrc}
+            src={coverSrc}
             alt={title}
-            onError={handleImageError}
+            onError={imageSrc ? handleImageError : undefined}
             className='mx-auto max-h-[80vh] w-auto max-w-full rounded-lg object-contain'
           />
         </div>
