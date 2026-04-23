@@ -14,8 +14,8 @@ function trimTrailingSlash(url: string) {
 }
 
 // 后端 API 地址，通过环境变量配置
-const API_BACKEND_URL = process.env.API_BACKEND_URL
-  ? trimTrailingSlash(process.env.API_BACKEND_URL)
+const API_BACKEND_URL = process.env.VITE_API_BACKEND_URL
+  ? trimTrailingSlash(process.env.VITE_API_BACKEND_URL)
   : '';
 
 const mimeTypes: Record<string, string> = {

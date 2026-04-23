@@ -11,9 +11,6 @@ function trimTrailingSlash(url: string) {
 
 // 优先使用 Vite 环境变量，未配置时回退到当前站点域名。
 export function getServerBaseUrl() {
-  const envBaseUrl = process.env.API_BACKEND_URL?.trim();
-  if (envBaseUrl) {
-    return trimTrailingSlash(envBaseUrl);
-  }
-  return '';
+  const envBaseUrl = import.meta.env.VITE_API_BACKEND_URL?.trim();
+  return envBaseUrl ? trimTrailingSlash(envBaseUrl) : '';
 }

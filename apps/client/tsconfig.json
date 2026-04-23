@@ -5,6 +5,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "noEmit": true,
+    "types": ["vite/client", "node"],
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
