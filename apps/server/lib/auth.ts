@@ -2,15 +2,14 @@ import { db } from '@demo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
-const trustedOrigins = ['http://localhost:3000'];
+const trustedOrigins = [
+  'http://localhost:3000',
+  'http://brucebook.thq.huivodata.com',
+];
 const betterAuthUrl = process.env.BETTER_AUTH_URL?.trim();
 
 if (betterAuthUrl) {
-  try {
-    trustedOrigins.push(new URL(betterAuthUrl).origin);
-  } catch {
-    // 环境变量写烂了就忽略，别让服务直接起不来。
-  }
+  trustedOrigins.push(new URL(betterAuthUrl).origin);
 }
 
 export const auth = betterAuth({

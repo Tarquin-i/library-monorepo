@@ -1,12 +1,17 @@
 import type { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://brucebook.thq.huivodata.com',
+];
+
 export function initCors(app: Hono) {
   app.use(
     // better-auth 的 /api/auth/* 也要包括在内
     '/api/*',
     cors({
-      origin: 'http://localhost:3000',
+      origin: allowedOrigins,
       allowHeaders: ['Content-Type', 'Authorization'],
       allowMethods: ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
       credentials: true,
