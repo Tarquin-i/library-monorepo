@@ -88,6 +88,9 @@
     },
     "packages/db": {
       "name": "@demo/db",
+      "dependencies": {
+        "zod": "^4.3.6",
+      },
     },
   },
   "packages": {
