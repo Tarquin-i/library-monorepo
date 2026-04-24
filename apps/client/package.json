@@ -10,11 +10,7 @@
     "build": "bun run build:static && bun run build:server",
     "build:static": "vite build",
     "build:server": "esbuild server.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
-    "lint": "biome lint",
-    "preview": "vite preview",
-    "format": "biome format",
-    "check": "biome check",
-    "test": "vitest run"
+    "lint": "biome check --write --unsafe"
   },
   "dependencies": {
     "@tarquin/server": "workspace:*",

@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "bun --port 3100 ./index.ts",
     "build": "NODE_ENV=production esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 ./index.ts",
-    "lint": "biome check --write --unsafe"
+    "lint": "biome check --write --unsafe",
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "@demo/db": "*",

@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "biome check --write --unsafe",
     "clean": "turbo run clean && rm -rf .turbo node_modules"
   },
   "devDependencies": {
