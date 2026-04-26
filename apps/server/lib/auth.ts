@@ -2,19 +2,23 @@ import { db } from '@demo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
-const trustedOrigins = [
+const betterAuthBaseUrl = process.env.BETTER_AUTH_URL?.trim();
+
+if (!betterAuthBaseUrl) {
+  throw new Error('BETTER_AUTH_URL 未配置。');
+}
+
+// 这里填的是浏览器会带过来的 Origin，不是后端接口地址。
+export const trustedOrigins = [
   'http://localhost:3000',
   'http://brucebook.thq.huivodata.com',
 ];
-const betterAuthUrl = process.env.BETTER_AUTH_URL?.trim();
-
-if (betterAuthUrl) {
-  trustedOrigins.push(new URL(betterAuthUrl).origin);
-}
 
 export const auth = betterAuth({
-  // 白名单来源走环境变量，别把线上域名写死在代码里。
-  trustedOrigins: [...new Set(trustedOrigins)],
+  // better-auth 用它生成回调地址、校验自身基准地址。
+  baseURL: betterAuthBaseUrl,
+  // 这里校验的是浏览器来源，应该填前端站点 origin。
+  trustedOrigins,
   database: drizzleAdapter(db, {
     provider: 'pg', // or "mysql", "sqlite"
   }),
