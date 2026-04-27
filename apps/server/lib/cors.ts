@@ -1,6 +1,6 @@
+import { trustedOrigins } from '@demo/db/better-auth/auth';
 import type { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { trustedOrigins } from './auth';
 
 export function initCors(app: Hono) {
   app.use(

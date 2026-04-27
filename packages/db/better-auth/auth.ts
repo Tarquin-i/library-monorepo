@@ -1,6 +1,8 @@
-import { db } from '@demo/db';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { admin } from 'better-auth/plugins';
+import { db } from '../index';
+import { adminAccessControl, adminPluginRoles } from './plugins/admin';
 
 const betterAuthBaseUrl = process.env.BETTER_AUTH_URL?.trim();
 
@@ -37,4 +39,12 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    admin({
+      defaultRole: 'reader',
+      adminRoles: ['admin'],
+      ac: adminAccessControl,
+      roles: adminPluginRoles,
+    }),
+  ],
 });

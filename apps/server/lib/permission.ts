@@ -1,5 +1,5 @@
+import { auth } from '@demo/db/better-auth/auth';
 import type { Context, Next } from 'hono';
-import { auth } from './auth';
 
 export type AuthenticatedUser = {
   id: string;
