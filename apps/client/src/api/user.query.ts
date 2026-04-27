@@ -1,42 +1,39 @@
-import { client } from '@/lib/rpc';
+import { authClient } from '@/lib/better-auth';
 
+export type AuthRole = 'admin' | 'librarian' | 'reader';
+
+// 获取用户列表
 export const listUsersQuery = {
   queryKey: ['users'],
   queryFn: async () => {
-    const res = await client.users.$get();
-    const json = await res.json();
-    if ('message' in json) {
-      throw new Error(json.message || '获取用户列表失败');
+    const { data, error } = await authClient.admin.listUsers({
+      query: {},
+    });
+
+    if (error) {
+      throw new Error(error.message || '获取用户列表失败');
     }
-    return json.data;
+
+    return data.users;
   },
 };
 
-export const listRolesQuery = {
-  queryKey: ['roles'],
-  queryFn: async () => {
-    const res = await client.roles.$get();
-    const json = await res.json();
-    // console.log('res--------------', res);
-    // console.log('json--------------', json);
-    if ('message' in json) {
-      throw new Error(json.message || '获取角色列表失败');
-    }
-    return json.data;
-  },
-};
-
+// 更新用户角色
 export const updateUserRoleMutation = {
   mutationFn: async ({
     userId,
     newRole,
   }: {
     userId: string;
-    newRole: string;
+    newRole: AuthRole;
   }) => {
-    await client.users[':id'].role.$patch({
-      param: { id: userId },
-      json: { role: newRole },
+    const { error } = await authClient.admin.setRole({
+      userId,
+      role: newRole,
     });
+
+    if (error) {
+      throw new Error(error.message || '角色修改失败');
+    }
   },
 };
