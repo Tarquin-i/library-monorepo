@@ -9,6 +9,7 @@
     "db:reset": "bun run db:push && bun ./seed/index.ts"
   },
   "dependencies": {
+    "better-auth": "^1.5.6",
     "zod": "^4.3.6"
   },
   "devDependencies": {}
