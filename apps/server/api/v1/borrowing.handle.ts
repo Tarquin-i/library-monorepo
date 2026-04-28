@@ -8,7 +8,7 @@ import { zValidator } from '@hono/zod-validator';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { getCurrentUser, requireAuth, requireRole } from '../../lib/permission';
+import { getCurrentUser, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 借书申请
@@ -24,10 +24,7 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { ISBN, quantity, borrowDays } = c.req.valid('json');
         const bookRes = await db.select().from(book).where(eq(book.ISBN, ISBN));
@@ -163,10 +160,7 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
         const existing = await db
@@ -206,10 +200,7 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
 
@@ -293,10 +284,7 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
         const { rejectReason } = c.req.valid('json');
@@ -333,14 +321,10 @@ const app = new Hono()
   // 读者申请归还
   .patch(
     '/borrowings/:id/request-return',
-    requireAuth,
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
 
@@ -436,13 +420,9 @@ const app = new Hono()
   // 查询自己的借阅记录
   .get(
     '/borrowings/my-records',
-    requireAuth,
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         // 关联查询，查询某个用户下的所有 book 信息
         const result = await db.query.borrowingRecord.findMany({

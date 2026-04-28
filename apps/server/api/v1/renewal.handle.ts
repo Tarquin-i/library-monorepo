@@ -8,16 +8,13 @@ import { zValidator } from '@hono/zod-validator';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { getCurrentUser, requireAuth, requireRole } from '../../lib/permission';
+import { getCurrentUser, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 读者查询自己的续借记录
-  .get('/renewals/my-records', requireAuth, async (c) => {
+  .get('/renewals/my-records', async (c) => {
     try {
-      const currentUser = getCurrentUser(c);
-      if (!currentUser) {
-        return c.json({ message: '未登录' }, 401);
-      }
+      const currentUser = getCurrentUser(c)!;
 
       // 先查出当前用户关联的借阅记录，再回查续借记录和图书信息
       const borrowings = await db
@@ -96,10 +93,7 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { borrowingId } = c.req.valid('json');
 
@@ -170,10 +164,7 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
 
@@ -245,10 +236,7 @@ const app = new Hono()
     zValidator('json', z.object({ rejectReason: z.string() })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
         const { rejectReason } = c.req.valid('json');
