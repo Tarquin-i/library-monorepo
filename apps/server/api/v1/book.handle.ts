@@ -1,41 +1,15 @@
 import { db } from '@demo/db';
-import { book } from '@demo/db/schema/book.entity';
+import {
+  book,
+  createBookSchema,
+  updateBookSchema,
+} from '@demo/db/schema/book.entity';
 import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
 import { zValidator } from '@hono/zod-validator';
 import { eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import z from 'zod';
 import { requireRole } from '../../lib/permission';
-
-// 录入书籍的参数校验
-const createBookSchema = z.object({
-  ISBN: z.string().trim().min(1),
-  bookName: z.string().min(1),
-  author: z.string().min(1),
-  publisher: z.string().min(1),
-  publishDate: z.string().min(1),
-  category: z.string().min(1),
-  price: z.number().positive(),
-  totalStock: z.number().int().min(1),
-  availableStock: z.number().int().min(0),
-  description: z.string().optional(),
-  coverImage: z.string().optional(),
-});
-
-// 修改书籍的参数校验
-const updateBookSchema = z.object({
-  bookName: z.string().min(1).optional(),
-  author: z.string().min(1).optional(),
-  publisher: z.string().min(1).optional(),
-  publishDate: z.string().min(1).optional(),
-  category: z.string().min(1).optional(),
-  price: z.number().positive().optional(),
-  totalStock: z.number().int().min(0).optional(),
-  availableStock: z.number().int().min(0).optional(),
-  description: z.string().optional(),
-  coverImage: z.string().optional(),
-  status: z.enum(['available', 'borrowed', 'lost', 'scrapped']).optional(),
-});
 
 const app = new Hono()
   // 获取书籍列表

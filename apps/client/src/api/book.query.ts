@@ -58,7 +58,6 @@ export const updateBookMutation = {
     if ('message' in json) {
       throw new Error(json.message || '修改书籍失败');
     }
-    return json.data;
   },
 };
 
@@ -71,6 +70,5 @@ export const deleteBookMutation = {
     if ('message' in json) {
       throw new Error(json.message || '删除书籍失败');
     }
-    return json.data;
   },
 };

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  listRolesQuery,
+  type AuthRole,
   listUsersQuery,
   updateUserRoleMutation,
 } from '@/api/user.query';
@@ -23,11 +23,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { authClient } from '@/lib/better-auth';
+
+const roleOptions = ['admin', 'librarian', 'reader'];
 
 export default function AccessControl() {
   const queryClient = useQueryClient();
+  const { data: session } = authClient.useSession();
   const { data: users = [] } = useQuery(listUsersQuery);
-  const { data: roles = [] } = useQuery(listRolesQuery);
+  const currentUserId = session?.user.id;
 
   const updateRole = useMutation({
     ...updateUserRoleMutation,
@@ -40,7 +44,7 @@ export default function AccessControl() {
     },
   });
 
-  function handleRoleChange(userId: string, newRole: string) {
+  function handleRoleChange(userId: string, newRole: AuthRole) {
     updateRole.mutate({ userId, newRole });
   }
 
@@ -91,15 +95,16 @@ export default function AccessControl() {
                     <TableCell>
                       <Select
                         value={user.role}
+                        disabled={user.id === currentUserId}
                         onValueChange={(value: string) =>
-                          handleRoleChange(user.id, value)
+                          handleRoleChange(user.id, value as AuthRole)
                         }
                       >
                         <SelectTrigger className='w-36'>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {roles.map((role) => (
+                          {roleOptions.map((role) => (
                             <SelectItem key={role} value={role}>
                               {role}
                             </SelectItem>

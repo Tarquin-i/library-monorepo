@@ -16,7 +16,6 @@ export const applyRenewalMutation = {
     if ('message' in json) {
       throw new Error(json.message || '续借申请失败');
     }
-    return json.data;
   },
 };
 
@@ -59,7 +58,6 @@ export const approveRenewalMutation = {
     if ('message' in json) {
       throw new Error(json.message || '批准续借失败');
     }
-    return json.data;
   },
 };
 
@@ -80,6 +78,5 @@ export const rejectRenewalMutation = {
     if ('message' in json) {
       throw new Error(json.message || '拒绝续借失败');
     }
-    return json.data;
   },
 };

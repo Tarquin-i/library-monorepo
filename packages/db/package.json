@@ -2,14 +2,15 @@
   "name": "@demo/db",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "lint": "biome check .",
-    "check-types": "tsc -p tsconfig.json --noEmit",
     "dev": "bun run db:reset && bunx drizzle-kit studio",
     "db:force-push": "drizzle-kit push --force",
     "db:push": "drizzle-kit push",
     "db:reset": "bun run db:push && bun ./seed/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "better-auth": "^1.5.6",
+    "zod": "^4.3.6"
+  },
   "devDependencies": {}
 }

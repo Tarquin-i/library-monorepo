@@ -19,7 +19,6 @@ export const applyBorrowingMutation = {
     if ('message' in json) {
       throw new Error(json.message || '借书申请失败');
     }
-    return json.data;
   },
 };
 
@@ -48,7 +47,6 @@ export const cancelBorrowingMutation = {
     if ('message' in json) {
       throw new Error(json.message || '取消申请失败');
     }
-    return json.data;
   },
 };
 
@@ -62,7 +60,6 @@ export const requestReturnMutation = {
     if ('message' in json) {
       throw new Error(json.message || '申请归还失败');
     }
-    return json.data;
   },
 };
 
@@ -77,7 +74,6 @@ export const listBorrowingsQuery = (status?: BorrowingsQuery) => ({
     if ('message' in json) {
       throw new Error(json.message || '获取借阅列表失败');
     }
-    console.log('12346789', json.data);
     return json.data;
   },
 });
@@ -92,7 +88,6 @@ export const approveBorrowingMutation = {
     if ('message' in json) {
       throw new Error(json.message || '审批失败');
     }
-    return json.data;
   },
 };
 
@@ -113,7 +108,6 @@ export const rejectBorrowingMutation = {
     if ('message' in json) {
       throw new Error(json.message || '拒绝失败');
     }
-    return json.data;
   },
 };
 
@@ -127,6 +121,5 @@ export const returnBorrowingMutation = {
     if ('message' in json) {
       throw new Error(json.message || '归还书籍失败');
     }
-    return json.data;
   },
 };
