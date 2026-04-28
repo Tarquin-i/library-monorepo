@@ -21,7 +21,7 @@ resources:
       diskSize: 512
       timeout: 300
       environmentVariables:
-        VITE_API_BACKEND_URL: ${env(VITE_API_BACKEND_URL)}
+        API_BACKEND_URL: ${env(API_BACKEND_URL)}
       triggers:
         - triggerName: httpTrigger
           triggerType: http

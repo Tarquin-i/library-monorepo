@@ -1,9 +1,8 @@
 import type { AppType } from '@tarquin/server/index';
 import { hc } from 'hono/client';
-import { getServerBaseUrl } from './utils';
 
-// RPC 与认证共用同一套服务端地址解析逻辑。
-export const client = hc<AppType>(getServerBaseUrl(), {
+// 空字符串表示请求当前站点同源 /api，由开发代理或生产前端函数转发。
+export const client = hc<AppType>('', {
   init: {
     credentials: 'include',
   },
