@@ -1,6 +1,4 @@
-# demo-monorepo
-
-## 跑起来
+## demo-monorepo
 
 ### 1. 安装依赖
 
