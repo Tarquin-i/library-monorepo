@@ -1,4 +1,4 @@
-import { auth } from '@demo/db/better-auth/auth';
+import { auth } from '@tarquin/db/better-auth/auth';
 import type { Context, Next } from 'hono';
 
 export type AuthenticatedUser = {

@@ -1,14 +1,14 @@
-import { db } from '@demo/db';
-import { book } from '@demo/db/schema/book.entity';
+import { zValidator } from '@hono/zod-validator';
+import { db } from '@tarquin/db';
+import { book } from '@tarquin/db/schema/book.entity';
 import {
   borrowingRecord,
   borrowingStatusEnum,
-} from '@demo/db/schema/borrowing.entity';
-import { zValidator } from '@hono/zod-validator';
+} from '@tarquin/db/schema/borrowing.entity';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { getCurrentUser, requireAuth, requireRole } from '../../lib/permission';
+import { getCurrentUser, requireRole } from '../../lib/permission';
 
 const app = new Hono()
   // 借书申请
@@ -24,10 +24,7 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { ISBN, quantity, borrowDays } = c.req.valid('json');
         const bookRes = await db.select().from(book).where(eq(book.ISBN, ISBN));
@@ -163,10 +160,7 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
         const existing = await db
@@ -206,10 +200,7 @@ const app = new Hono()
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
 
@@ -287,16 +278,10 @@ const app = new Hono()
     '/borrowings/:id/reject',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
-    zValidator(
-      'json',
-      z.object({ rejectReason: z.string() }),
-    ),
+    zValidator('json', z.object({ rejectReason: z.string() })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
         const { rejectReason } = c.req.valid('json');
@@ -333,14 +318,10 @@ const app = new Hono()
   // 读者申请归还
   .patch(
     '/borrowings/:id/request-return',
-    requireAuth,
     zValidator('param', z.object({ id: z.string().transform(Number) })),
     async (c) => {
       try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+        const currentUser = getCurrentUser(c)!;
 
         const { id } = c.req.valid('param');
 
@@ -434,30 +415,23 @@ const app = new Hono()
     },
   )
   // 查询自己的借阅记录
-  .get(
-    '/borrowings/my-records',
-    requireAuth,
-    async (c) => {
-      try {
-        const currentUser = getCurrentUser(c);
-        if (!currentUser) {
-          return c.json({ message: '未登录' }, 401);
-        }
+  .get('/borrowings/my-records', async (c) => {
+    try {
+      const currentUser = getCurrentUser(c)!;
 
-        // 关联查询，查询某个用户下的所有 book 信息
-        const result = await db.query.borrowingRecord.findMany({
-          where: eq(borrowingRecord.userId, currentUser.id),
-          with: {
-            book: true, // 自动关联查询 book 表
-          },
-        });
+      // 关联查询，查询某个用户下的所有 book 信息
+      const result = await db.query.borrowingRecord.findMany({
+        where: eq(borrowingRecord.userId, currentUser.id),
+        with: {
+          book: true, // 自动关联查询 book 表
+        },
+      });
 
-        return c.json({ data: result });
-      } catch (error) {
-        console.error('查询借阅记录失败:', error);
-        return c.json({ message: '服务器错误，请稍后重试' }, 500);
-      }
-    },
-  );
+      return c.json({ data: result });
+    } catch (error) {
+      console.error('查询借阅记录失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
+    }
+  });
 
 export default app;

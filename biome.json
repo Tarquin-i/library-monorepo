@@ -10,12 +10,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!bun.lock",
-      "!**/styles.css",
-      "!**/routeTree.gen.ts"
-    ]
+    "includes": ["**", "!bun.lock", "!**/styles.css", "!**/routeTree.gen.ts"]
   },
   "formatter": {
     "attributePosition": "auto",

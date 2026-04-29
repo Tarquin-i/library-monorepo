@@ -1,7 +1,7 @@
 import {
   adminAccessControl,
   adminPluginRoles,
-} from '@demo/db/better-auth/plugins/admin';
+} from '@tarquin/db/better-auth/plugins/admin';
 import { adminClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
