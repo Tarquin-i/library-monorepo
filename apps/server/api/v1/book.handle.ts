@@ -1,11 +1,11 @@
-import { db } from '@demo/db';
+import { zValidator } from '@hono/zod-validator';
+import { db } from '@tarquin/db';
 import {
   book,
   createBookSchema,
   updateBookSchema,
-} from '@demo/db/schema/book.entity';
-import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
-import { zValidator } from '@hono/zod-validator';
+} from '@tarquin/db/schema/book.entity';
+import { borrowingRecord } from '@tarquin/db/schema/borrowing.entity';
 import { eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import z from 'zod';
@@ -84,11 +84,13 @@ const app = new Hono()
           return c.json({ message: '书籍不存在' }, 404);
         }
 
+        // 如果有传可借数量和藏馆数量，则使用传入的，否则使用现有的数量
         const currentBook = existing[0];
         const nextTotalStock = data.totalStock ?? currentBook.totalStock;
         const nextAvailableStock =
           data.availableStock ?? currentBook.availableStock;
 
+        // 如果只传了可借数量，可借数量可能会大于藏品数量
         if (nextAvailableStock > nextTotalStock) {
           return c.json({ message: '可借数量不能大于馆藏数量' }, 400);
         }

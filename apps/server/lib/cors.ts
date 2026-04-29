@@ -1,4 +1,4 @@
-import { trustedOrigins } from '@demo/db/better-auth/auth';
+import { trustedOrigins } from '@tarquin/db/better-auth/auth';
 import type { Hono } from 'hono';
 import { cors } from 'hono/cors';
 

@@ -1,10 +1,10 @@
-import { db } from '@demo/db';
-import { borrowingRecord } from '@demo/db/schema/borrowing.entity';
+import { zValidator } from '@hono/zod-validator';
+import { db } from '@tarquin/db';
+import { borrowingRecord } from '@tarquin/db/schema/borrowing.entity';
 import {
   renewalRecord,
   renewalStatusEnum,
-} from '@demo/db/schema/renewal.entity';
-import { zValidator } from '@hono/zod-validator';
+} from '@tarquin/db/schema/renewal.entity';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';

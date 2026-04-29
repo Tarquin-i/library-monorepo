@@ -1,7 +1,7 @@
-import { Hono } from 'hono';
-import { handle } from 'hono-alibaba-cloud-fc3-adapter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { Hono } from 'hono';
+import { handle } from 'hono-alibaba-cloud-fc3-adapter';
 
 const app = new Hono();
 
@@ -67,7 +67,7 @@ app.all('/api/*', async (c) => {
         c.req.method !== 'GET' && c.req.method !== 'HEAD'
           ? c.req.raw.body
           : undefined,
-      // @ts-ignore - duplex is needed for streaming body
+      // @ts-expect-error - duplex is needed for streaming body
       duplex: 'half',
     });
 
@@ -84,7 +84,7 @@ app.all('/api/*', async (c) => {
     if (authToken) {
       console.log(
         '[Proxy] Found set-auth-token:',
-        authToken.substring(0, 20) + '...',
+        `${authToken.substring(0, 20)}...`,
       );
     }
 

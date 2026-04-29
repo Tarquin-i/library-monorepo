@@ -1,10 +1,10 @@
-import { db } from '@demo/db';
-import { book } from '@demo/db/schema/book.entity';
+import { zValidator } from '@hono/zod-validator';
+import { db } from '@tarquin/db';
+import { book } from '@tarquin/db/schema/book.entity';
 import {
   borrowingRecord,
   borrowingStatusEnum,
-} from '@demo/db/schema/borrowing.entity';
-import { zValidator } from '@hono/zod-validator';
+} from '@tarquin/db/schema/borrowing.entity';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -278,10 +278,7 @@ const app = new Hono()
     '/borrowings/:id/reject',
     requireRole('admin', 'librarian'),
     zValidator('param', z.object({ id: z.string().transform(Number) })),
-    zValidator(
-      'json',
-      z.object({ rejectReason: z.string() }),
-    ),
+    zValidator('json', z.object({ rejectReason: z.string() })),
     async (c) => {
       try {
         const currentUser = getCurrentUser(c)!;
@@ -418,26 +415,23 @@ const app = new Hono()
     },
   )
   // 查询自己的借阅记录
-  .get(
-    '/borrowings/my-records',
-    async (c) => {
-      try {
-        const currentUser = getCurrentUser(c)!;
+  .get('/borrowings/my-records', async (c) => {
+    try {
+      const currentUser = getCurrentUser(c)!;
 
-        // 关联查询，查询某个用户下的所有 book 信息
-        const result = await db.query.borrowingRecord.findMany({
-          where: eq(borrowingRecord.userId, currentUser.id),
-          with: {
-            book: true, // 自动关联查询 book 表
-          },
-        });
+      // 关联查询，查询某个用户下的所有 book 信息
+      const result = await db.query.borrowingRecord.findMany({
+        where: eq(borrowingRecord.userId, currentUser.id),
+        with: {
+          book: true, // 自动关联查询 book 表
+        },
+      });
 
-        return c.json({ data: result });
-      } catch (error) {
-        console.error('查询借阅记录失败:', error);
-        return c.json({ message: '服务器错误，请稍后重试' }, 500);
-      }
-    },
-  );
+      return c.json({ data: result });
+    } catch (error) {
+      console.error('查询借阅记录失败:', error);
+      return c.json({ message: '服务器错误，请稍后重试' }, 500);
+    }
+  });
 
 export default app;

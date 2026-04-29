@@ -1,5 +1,5 @@
 {
-  "name": "@demo/db",
+  "name": "@tarquin/db",
   "type": "module",
   "scripts": {
     "lint": "biome check .",

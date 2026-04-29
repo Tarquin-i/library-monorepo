@@ -1,6 +1,8 @@
 {
   "references": [
- 
+    { "path": "./apps/client" },
+    { "path": "./apps/server" },
+    { "path": "./packages/db" }
   ],
   "compilerOptions": {
     "target": "ES2022",

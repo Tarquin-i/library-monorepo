@@ -1,4 +1,4 @@
-import { auth } from '@demo/db/better-auth/auth';
+import { auth } from '@tarquin/db/better-auth/auth';
 import { Hono } from 'hono';
 import { handle } from 'hono-alibaba-cloud-fc3-adapter';
 import api from './api/route';
